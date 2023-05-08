@@ -21,6 +21,10 @@ const userSchema = new Schema<UserDocument>({
     type: String,
     required: true,
   },
+  address: {
+    type: String,
+    required: true,
+  },
 });
 
 const UserModel = mongoose.model<UserDocument>("User", userSchema);
