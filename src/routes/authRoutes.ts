@@ -1,8 +1,10 @@
 import { Router } from "express";
-import { login } from "../controllers/authController";
+import { login, createUser } from "../controllers/authController";
 
-const router = Router();
+const authRouter = Router();
 // login route
-router.post("/login", login);
+authRouter.post("/login", login);
+// SignUp route
+authRouter.post("/signup", createUser);
 
-export default router;
+export default authRouter;
