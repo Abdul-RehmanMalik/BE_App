@@ -1,58 +1,103 @@
-import { Request, Response } from "express";
+import { Request, Response as ExpressResponse } from "express";
 import bcrypt from "bcrypt";
-import User from "../models/User";
+import User, { UserPayload } from "../models/User";
 import jwt from "jsonwebtoken";
+import { Post, Route, Body, Tags, Example } from "tsoa";
+import { generateAccessTokenken } from "../util/generateAccessToken";
 
-export const login = async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
+@Route("/auth")
+@Tags("Auth")
+export class AuthController {
+  /**
+   * @summary Create user with the following attributes: email, Name, Password, address.
+   *
+   */
+  @Example<UserDetailsResponse>({
+    name: "John Snow",
+    email: "johnSnow01@gmail.com",
+    address: "H#123 Block 2 Sector J, Abc Town, NY",
+  })
+  @Post("/")
+  public async createUser(
+    @Body() body: UserPayload
+  ): Promise<UserDetailsResponse> {
+    const { email, password, name, address } = body;
 
-    // find user by email because email
-    const user: any | null = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw {
+        code: 409, //409 status code (Conflict) indicates that the request could not be processed because of conflict in the request,
+        message: "User with this email already exists",
+      };
     }
 
-    // checking password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-
-    // jsonwebtoken generation
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET as string
-    );
-    //send generated token in response
-    res.status(200).json({ token });
-  } catch (err: any) {
-    console.log("Login failed");
-    res.status(500).json({ error: err.message });
-  }
-};
-export const createUser = async (req: Request, res: Response) => {
-  try {
-    const { email, password, name, address } = req.body;
-    // pasword hashing
-    const invalidEmail = await User.findOne({ email });
-    // to check whether user already exists or not
-    if (invalidEmail) {
-      res.status(400).json(invalidEmail);
-    }
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create a new user
     const user = await User.create({
       email,
       password: hashedPassword,
       name,
       address,
     });
-    res.status(201).json(user);
-  } catch (err: any) {
-    console.log("Failed to reg new user");
-    res.status(500).json({ error: err.message });
+
+    return {
+      email: user.email,
+      name: user.name,
+      address: user.address,
+    };
   }
-};
+
+  /**
+   * @summary logs user in and returns access token
+   *
+   */
+  @Example<TokenResponse>({
+    accessToken: "someRandomCryptoString",
+  })
+  @Post("/login")
+  public async login(
+    @Body() body: { email: string; password: string }
+  ): Promise<TokenResponse> {
+    const { email, password } = body;
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw {
+        code: 401, //401 Unauthorized is the status code to return when the client provides no credentials or invalid credentials.
+        message: "Invalid Email or Password",
+      };
+    }
+
+    // Check password validity
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw {
+        code: 401, //401 Unauthorized is the status code to return when the client provides no credentials or invalid credentials.
+        message: "Invalid Email or Password",
+      };
+    }
+
+    // Generate a JSON Web Token
+    const accessToken = generateAccessTokenken(user._id);
+    return { accessToken };
+  }
+}
+
+interface TokenResponse {
+  /**
+   * Access Token
+   * @example "someRandomCryptoString"
+   */
+  accessToken: string;
+}
+export interface UserDetailsResponse {
+  email: string;
+  name: string;
+  address: string;
+}

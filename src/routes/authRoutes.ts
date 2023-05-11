@@ -1,10 +1,30 @@
-import { Router } from "express";
-import { login, createUser } from "../controllers/authController";
+import express from "express";
+import { AuthController } from "../controllers/authController";
+import { loginValidation, signUpValidation } from "../util/validation";
 
-const authRouter = Router();
-// login route
-authRouter.post("/login", login);
-// SignUp route
-authRouter.post("/signup", createUser);
+const authRouter = express.Router();
+const authController = new AuthController();
+// Signup route
+authRouter.post("/signup", async (req, res) => {
+  const { error, value: body } = signUpValidation(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+  try {
+    const response = await authController.createUser(body);
+    res.send(response);
+  } catch (err: any) {
+    res.status(err.code).send(err.message);
+  }
+});
+// Login route
+authRouter.post("/login", async (req, res) => {
+  const { error, value: body } = loginValidation(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+  try {
+    const response = await authController.login(body);
+    res.send(response);
+  } catch (err: any) {
+    res.status(err.code).send(err.message);
+  }
+});
 
 export default authRouter;

@@ -1,8 +1,11 @@
 import express from "express";
-import authRoute from "./authRoutes";
-
+import authRouter from "./authRoutes";
+import userRouter from "./userRoutes";
+import swaggerUi from "swagger-ui-express";
 const router = express.Router();
-
-router.use("/auth", authRoute);
+//auth route
+router.use("/auth", authRouter);
+// user route
+router.use("/user", userRouter);
 
 export default router;

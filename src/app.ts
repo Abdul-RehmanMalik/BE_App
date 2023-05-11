@@ -12,7 +12,7 @@ connectToMongoDB();
 app.use(express.json());
 
 // router
-app.use("/router", router);
+app.use("/", router);
 
 //app listening on Port
 app.listen(port, () => {
