@@ -1,5 +1,5 @@
 import express from "express";
-import { AuthController } from "../controllers/authController";
+import { AuthController } from "../controllers/auth";
 import { loginValidation, signUpValidation } from "../util/validation";
 
 const authRouter = express.Router();
@@ -9,7 +9,7 @@ authRouter.post("/signup", async (req, res) => {
   const { error, value: body } = signUpValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
   try {
-    const response = await authController.createUser(body);
+    const response = await authController.signUp(body);
     res.send(response);
   } catch (err: any) {
     res.status(err.code).send(err.message);

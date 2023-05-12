@@ -1,7 +1,7 @@
 import express from "express";
 import User, { UserPayload } from "../models/User";
 import { Route, Path, Get, Request, Tags, Example } from "tsoa";
-import { UserDetailsResponse } from "./authController";
+import { UserDetailsResponse } from "./auth";
 @Route("/user")
 @Tags("User")
 export class UserController {

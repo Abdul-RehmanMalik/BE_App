@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import bcrypt from "bcrypt";
 
 export interface UserPayload {
   /**
@@ -21,12 +22,7 @@ export interface UserPayload {
    */
   address: string;
 }
-interface UserDocument extends UserPayload, Document {
-  name: string;
-  email: string;
-  password: string;
-  address: string;
-}
+interface UserDocument extends UserPayload, Document {}
 
 const userSchema = new Schema<UserDocument>({
   name: {
@@ -47,4 +43,19 @@ const userSchema = new Schema<UserDocument>({
     required: true,
   },
 });
+export class PasswordUtils {
+  static async hashPassword(password: string): Promise<string> {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
+  }
+  static async comparePassword(
+    password: string,
+    user_password: string
+  ): Promise<boolean> {
+    const isPasswordValid = await bcrypt.compare(password, user_password);
+
+    return isPasswordValid;
+  }
+}
 export default mongoose.model<UserDocument>("User", userSchema);

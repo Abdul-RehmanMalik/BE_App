@@ -1,7 +1,5 @@
-import { Request, Response as ExpressResponse } from "express";
 import bcrypt from "bcrypt";
-import User, { UserPayload } from "../models/User";
-import jwt from "jsonwebtoken";
+import User, { PasswordUtils, UserPayload } from "../models/User";
 import { Post, Route, Body, Tags, Example } from "tsoa";
 import { generateAccessTokenken } from "../util/generateAccessToken";
 
@@ -18,9 +16,7 @@ export class AuthController {
     address: "H#123 Block 2 Sector J, Abc Town, NY",
   })
   @Post("/")
-  public async createUser(
-    @Body() body: UserPayload
-  ): Promise<UserDetailsResponse> {
+  public async signUp(@Body() body: UserPayload): Promise<UserDetailsResponse> {
     const { email, password, name, address } = body;
 
     // Check if the email already exists
@@ -33,7 +29,7 @@ export class AuthController {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await PasswordUtils.hashPassword(password);
 
     // Create a new user
     const user = await User.create({
@@ -74,7 +70,10 @@ export class AuthController {
     }
 
     // Check password validity
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await PasswordUtils.comparePassword(
+      password,
+      user.password
+    );
 
     if (!isPasswordValid) {
       throw {
