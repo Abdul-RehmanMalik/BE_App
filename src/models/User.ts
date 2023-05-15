@@ -22,7 +22,9 @@ export interface UserPayload {
    */
   address: string;
 }
-interface UserDocument extends UserPayload, Document {}
+interface UserDocument extends UserPayload, Document {
+  tokens: { accessToken: string; refreshToken: string };
+}
 
 const userSchema = new Schema<UserDocument>({
   name: {
@@ -41,6 +43,10 @@ const userSchema = new Schema<UserDocument>({
   address: {
     type: String,
     required: true,
+  },
+  tokens: {
+    accessToken: { type: String },
+    refreshToken: { type: String },
   },
 });
 export class PasswordUtils {

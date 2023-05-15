@@ -18,5 +18,5 @@ export const signUpValidation = (data: any): Joi.ValidationResult =>
   }).validate(data);
 export const getUserValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
-    name: usernameschema.required(),
+    username: usernameschema.required(),
   }).validate(data);

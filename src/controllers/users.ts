@@ -22,7 +22,6 @@ export class UserController {
   ): Promise<UserDetailsResponse> {
     // Find the user by name.
     const user = await User.findOne({ name });
-
     if (!user) {
       throw {
         code: 404, // 404 means not found
