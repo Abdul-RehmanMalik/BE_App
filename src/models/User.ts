@@ -1,6 +1,8 @@
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcrypt";
-
+import { connectToMongoDB } from "../util/dbConnection";
+// var autoIncrement = require("mongoose-auto-increment");
+// autoIncrement.initialize(connectToMongoDB);
 export interface UserPayload {
   /**
    * name for user
@@ -24,6 +26,11 @@ export interface UserPayload {
 }
 interface UserDocument extends UserPayload, Document {
   tokens: { accessToken: string; refreshToken: string };
+  // userId: {
+  //   type: Number;
+  //   unique: true;
+  //   required: true;
+  // };
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -64,4 +71,7 @@ export class PasswordUtils {
     return isPasswordValid;
   }
 }
+
+// userSchema.plugin(autoIncrement.plugin, { model: "User", field: "userId" });
+
 export default mongoose.model<UserDocument>("User", userSchema);

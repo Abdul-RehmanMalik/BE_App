@@ -32,6 +32,7 @@
     "express-session": "^1.17.3",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
+    "mongodb-autoincrement": "^1.0.1",
     "mongoose": "^7.1.0",
     "mongoose-sequence": "^5.3.1",
     "swagger-ui-express": "^4.6.3",

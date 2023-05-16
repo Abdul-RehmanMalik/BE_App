@@ -1,7 +1,21 @@
 import User, { PasswordUtils, UserPayload } from "../models/User";
-import { Post, Route, Body, Tags, Example } from "tsoa";
+import {
+  Security,
+  Route,
+  Tags,
+  Example,
+  Post,
+  Patch,
+  Request,
+  Body,
+  Query,
+  Hidden,
+} from "tsoa";
 import { generateAccessTokenken } from "../util/generateAccessToken";
 import { generateRefreshToken } from "../util/generaterefreshtoken";
+import { RequestUser } from "../types/RequestUser";
+import { removeTokensInDB } from "../util/removeTokensInDB";
+import { UserRequest } from "../types/UserRequest";
 
 @Route("/auth")
 @Tags("Auth")
@@ -86,15 +100,42 @@ export class AuthController {
     }
 
     // Generate a JSON Web Token
-    const accessToken = generateAccessTokenken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
+    const accessToken = generateAccessTokenken(user.email);
+    const refreshToken = generateRefreshToken(user.email);
+    console.log("userid", user.email);
     user.tokens = {
       accessToken: accessToken,
       refreshToken: refreshToken,
     };
+    user.save();
     return { tokens: user.tokens };
   }
+  //logout
+  // @Security("bearerAuth")
+  // @Post("/logout")
+  // public async logout(@Query() @Hidden() data?: RequestUser) {
+  //   return logout(data!);
+  // }
+  /**
+   * @summary Removes JWT tokens and returns success message
+   */
+  @Security("bearerAuth")
+  @Post("/logout")
+  public async logout(@Request() req?: UserRequest) {
+    console.log("in auth cont logout swagger");
+    return logout(req!);
+  }
 }
+
+//logout implementation
+// const logout = async (userInfo: RequestUser) => {
+//   await removeTokensInDB(userInfo.userId);
+// };
+const logout = async (req: UserRequest) => {
+  await removeTokensInDB((req.user as RequestUser).email);
+  console.log("in auth cont logout");
+  return "Logged Out Successfully";
+};
 
 interface TokenResponse {
   /**

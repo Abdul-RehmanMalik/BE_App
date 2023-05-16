@@ -16,5 +16,5 @@ router.use(
     },
   })
 );
-console.log("in router");
+
 export default router;
