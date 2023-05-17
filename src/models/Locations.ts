@@ -5,7 +5,6 @@ interface LocationDocument extends Document {
   rating: number;
 }
 
-// Define the schema
 const locationSchema = new Schema<LocationDocument>({
   description: {
     type: String,
@@ -17,5 +16,4 @@ const locationSchema = new Schema<LocationDocument>({
   },
 });
 
-// Create the model
 export default mongoose.model<LocationDocument>("Location", locationSchema);

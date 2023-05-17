@@ -2,14 +2,11 @@ import User from "../models/User";
 import { RequestUser } from "../types/RequestUser";
 
 export const verifyTokenInDB = async (
-  email: string,
+  id: Number,
   token: string
 ): Promise<RequestUser | undefined> => {
-  const dbUser = await User.findOne({ email });
+  const dbUser = await User.findOne({ id });
   if (!dbUser) {
-    console.log(email);
-    console.log("in verify token user not found");
-
     return undefined;
   }
   if (
@@ -17,10 +14,9 @@ export const verifyTokenInDB = async (
     dbUser.tokens.refreshToken === token
   ) {
     return {
-      email: dbUser.email,
+      id: dbUser.id,
     };
   }
-  console.log("in verify token, token not found");
 
   return undefined;
 };

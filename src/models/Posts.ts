@@ -26,5 +26,4 @@ const postSchema = new Schema<PostDocument>({
   },
 });
 
-// Create the model
 export default mongoose.model<PostDocument>("Post", postSchema);

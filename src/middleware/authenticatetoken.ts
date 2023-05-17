@@ -29,15 +29,13 @@ const authenticateToken = async (
   const token = authHeader?.split(" ")[1];
   try {
     if (!token) {
-      console.log("hi");
       throw "Unauthorized";
     }
     const data: any = jwt.verify(token, key);
-    console.log(data);
-    const user = await verifyTokenInDB(data?.userId, token);
-    console.log(data.userId);
+
+    const user = await verifyTokenInDB(data?.id, token);
+
     if (!user) {
-      console.log("hi2");
       throw "Unauthorized";
     }
     req.user = user;

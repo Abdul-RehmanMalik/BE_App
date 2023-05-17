@@ -1,16 +1,5 @@
 import User, { PasswordUtils, UserPayload } from "../models/User";
-import {
-  Security,
-  Route,
-  Tags,
-  Example,
-  Post,
-  Patch,
-  Request,
-  Body,
-  Query,
-  Hidden,
-} from "tsoa";
+import { Security, Route, Tags, Example, Post, Request, Body } from "tsoa";
 import { generateAccessTokenken } from "../util/generateAccessToken";
 import { generateRefreshToken } from "../util/generaterefreshtoken";
 import { RequestUser } from "../types/RequestUser";
@@ -46,13 +35,13 @@ export class AuthController {
     const hashedPassword = await PasswordUtils.hashPassword(password);
 
     // Create a new user
+
     const user = await User.create({
       email,
       password: hashedPassword,
       name,
       address,
     });
-
     return {
       email: user.email,
       name: user.name,
@@ -100,9 +89,9 @@ export class AuthController {
     }
 
     // Generate a JSON Web Token
-    const accessToken = generateAccessTokenken(user.email);
-    const refreshToken = generateRefreshToken(user.email);
-    console.log("userid", user.email);
+    const accessToken = generateAccessTokenken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+    console.log("userid", user.id);
     user.tokens = {
       accessToken: accessToken,
       refreshToken: refreshToken,
@@ -110,30 +99,18 @@ export class AuthController {
     user.save();
     return { tokens: user.tokens };
   }
-  //logout
-  // @Security("bearerAuth")
-  // @Post("/logout")
-  // public async logout(@Query() @Hidden() data?: RequestUser) {
-  //   return logout(data!);
-  // }
+
   /**
    * @summary Removes JWT tokens and returns success message
    */
   @Security("bearerAuth")
   @Post("/logout")
   public async logout(@Request() req?: UserRequest) {
-    console.log("in auth cont logout swagger");
     return logout(req!);
   }
 }
-
-//logout implementation
-// const logout = async (userInfo: RequestUser) => {
-//   await removeTokensInDB(userInfo.userId);
-// };
 const logout = async (req: UserRequest) => {
-  await removeTokensInDB((req.user as RequestUser).email);
-  console.log("in auth cont logout");
+  await removeTokensInDB((req.user as RequestUser).id);
   return "Logged Out Successfully";
 };
 
