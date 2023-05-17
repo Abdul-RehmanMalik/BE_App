@@ -10,9 +10,7 @@ const authController = new AuthController();
 // Signup route
 authRouter.post("/signup", async (req, res) => {
   const { error, value: body } = signUpValidation(req.body);
-  if (error) {
-    return res.status(400).send(error.details[0].message);
-  }
+  if (error) return res.status(400).send(error.details[0].message);
   try {
     const response = await authController.signUp(body);
     res.send(response);
