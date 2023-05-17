@@ -1,7 +1,7 @@
-import bcrypt from "bcrypt";
 import User, { PasswordUtils, UserPayload } from "../models/User";
 import { Post, Route, Body, Tags, Example } from "tsoa";
 import { generateAccessTokenken } from "../util/generateAccessToken";
+import { generateRefreshToken } from "../util/generaterefreshtoken";
 
 @Route("/auth")
 @Tags("Auth")
@@ -15,7 +15,7 @@ export class AuthController {
     email: "johnSnow01@gmail.com",
     address: "H#123 Block 2 Sector J, Abc Town, NY",
   })
-  @Post("/")
+  @Post("/signup")
   public async signUp(@Body() body: UserPayload): Promise<UserDetailsResponse> {
     const { email, password, name, address } = body;
 
@@ -51,7 +51,10 @@ export class AuthController {
    *
    */
   @Example<TokenResponse>({
-    accessToken: "someRandomCryptoString",
+    tokens: {
+      accessToken: "someRandomCryptoString",
+      refreshToken: "someRandomCryptoString",
+    },
   })
   @Post("/login")
   public async login(
@@ -84,16 +87,21 @@ export class AuthController {
 
     // Generate a JSON Web Token
     const accessToken = generateAccessTokenken(user._id);
-    return { accessToken };
+    const refreshToken = generateRefreshToken(user._id);
+    user.tokens = {
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    };
+    return { tokens: user.tokens };
   }
 }
 
 interface TokenResponse {
   /**
-   * Access Token
+   * Access Token and Refresh Tokens
    * @example "someRandomCryptoString"
    */
-  accessToken: string;
+  tokens: { accessToken: string; refreshToken: string };
 }
 export interface UserDetailsResponse {
   email: string;

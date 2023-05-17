@@ -45,12 +45,20 @@ components:
             additionalProperties: false
         TokenResponse:
             properties:
-                accessToken:
-                    type: string
-                    description: 'Access Token'
+                tokens:
+                    properties:
+                        refreshToken:
+                            type: string
+                        accessToken:
+                            type: string
+                    required:
+                        - refreshToken
+                        - accessToken
+                    type: object
+                    description: 'Access Token and Refresh Tokens'
                     example: someRandomCryptoString
             required:
-                - accessToken
+                - tokens
             type: object
             additionalProperties: false
     securitySchemes:
@@ -59,14 +67,14 @@ components:
             scheme: bearer
             bearerFormat: JWT
 info:
-    title: be_app
+    title: express-ts
     version: 1.0.0
     license:
         name: ISC
     contact: {}
 openapi: 3.0.0
 paths:
-    /auth:
+    /auth/signup:
         post:
             operationId: SignUp
             responses:
@@ -102,7 +110,7 @@ paths:
                                 $ref: '#/components/schemas/TokenResponse'
                             examples:
                                 'Example 1':
-                                    value: {accessToken: someRandomCryptoString}
+                                    value: {tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString}}
             summary: 'logs user in and returns access token'
             tags:
                 - Auth

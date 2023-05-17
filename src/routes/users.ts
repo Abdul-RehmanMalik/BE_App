@@ -5,7 +5,7 @@ import { UserController } from "../controllers/users";
 const userRouter = express.Router();
 const userController = new UserController();
 // getuser route
-userRouter.get("/getuser", async (req, res) => {
+userRouter.get("/:username", async (req, res) => {
   const { error, value: params } = getUserValidation(req.params);
   if (error) return res.status(400).send(error.details[0].message);
   const { username } = params;
