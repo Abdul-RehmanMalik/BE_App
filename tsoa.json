@@ -1,0 +1,32 @@
+{
+  "entryFile": "src/app.ts",
+  "routes": {
+    "basePath": "/api"
+  },
+  "compilerOptions": {
+    "strictNullChecks": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "strictBindCallApply": false
+  },
+  "swagger": {
+    "spec": {
+      "entryFile": "src/app.ts"
+    },
+    "outputDirectory": "./dist/swagger"
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Operations about auth"
+    },
+
+    {
+      "name": "User",
+      "description": "Operations with users"
+    }
+  ],
+  "yaml": true,
+  "specVersion": 3
+}

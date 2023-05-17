@@ -1,0 +1,160 @@
+components:
+    examples: {}
+    headers: {}
+    parameters: {}
+    requestBodies: {}
+    responses: {}
+    schemas:
+        UserDetailsResponse:
+            properties:
+                email:
+                    type: string
+                name:
+                    type: string
+                address:
+                    type: string
+            required:
+                - email
+                - name
+                - address
+            type: object
+            additionalProperties: false
+        UserPayload:
+            properties:
+                name:
+                    type: string
+                    description: 'name for user'
+                    example: 'John Snow'
+                email:
+                    type: string
+                    description: 'email for user'
+                    example: johnSnow01@gmail.com
+                password:
+                    type: string
+                    description: 'Password for user'
+                address:
+                    type: string
+                    description: 'address for user'
+                    example: 'H#123 Block 2 Sector J, Abc Town, NY'
+            required:
+                - name
+                - email
+                - password
+                - address
+            type: object
+            additionalProperties: false
+        TokenResponse:
+            properties:
+                accessToken:
+                    type: string
+                    description: 'Access Token'
+                    example: someRandomCryptoString
+            required:
+                - accessToken
+            type: object
+            additionalProperties: false
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+info:
+    title: be_app
+    version: 1.0.0
+    license:
+        name: ISC
+    contact: {}
+openapi: 3.0.0
+paths:
+    /auth:
+        post:
+            operationId: SignUp
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UserDetailsResponse'
+                            examples:
+                                'Example 1':
+                                    value: {name: 'John Snow', email: johnSnow01@gmail.com, address: 'H#123 Block 2 Sector J, Abc Town, NY'}
+            summary: 'Create user with the following attributes: email, Name, Password, address.'
+            tags:
+                - Auth
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UserPayload'
+    /auth/login:
+        post:
+            operationId: Login
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TokenResponse'
+                            examples:
+                                'Example 1':
+                                    value: {accessToken: someRandomCryptoString}
+            summary: 'logs user in and returns access token'
+            tags:
+                - Auth
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                password:
+                                    type: string
+                                email:
+                                    type: string
+                            required:
+                                - password
+                                - email
+                            type: object
+    '/user/{name}':
+        get:
+            operationId: GetUser
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UserDetailsResponse'
+                            examples:
+                                'Example 1':
+                                    value: {name: 'John Snow', email: johnSnow01@gmail.com, address: 'H#123 Block 2 Sector J, Abc Town, NY'}
+            summary: 'Get user properties - such as name, email and address.'
+            tags:
+                - User
+            security: []
+            parameters:
+                -
+                    description: 'The User''s name'
+                    in: path
+                    name: name
+                    required: true
+                    schema:
+                        type: string
+                    example: johnSnow01
+servers:
+    -
+        url: /
+tags:
+    -
+        name: Auth
+        description: 'Operations about auth'
+    -
+        name: User
+        description: 'Operations with users'

@@ -1,11 +1,28 @@
 import mongoose, { Document, Schema } from "mongoose";
+import bcrypt from "bcrypt";
 
-interface UserDocument extends Document {
+export interface UserPayload {
+  /**
+   * name for user
+   * @example "John Snow"
+   */
   name: string;
+  /**
+   * email for user
+   * @example "johnSnow01@gmail.com"
+   */
   email: string;
+  /**
+   * Password for user
+   */
   password: string;
+  /**
+   * address for user
+   * @example "H#123 Block 2 Sector J, Abc Town, NY"
+   */
   address: string;
 }
+interface UserDocument extends UserPayload, Document {}
 
 const userSchema = new Schema<UserDocument>({
   name: {
@@ -26,4 +43,19 @@ const userSchema = new Schema<UserDocument>({
     required: true,
   },
 });
+export class PasswordUtils {
+  static async hashPassword(password: string): Promise<string> {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
+  }
+  static async comparePassword(
+    password: string,
+    user_password: string
+  ): Promise<boolean> {
+    const isPasswordValid = await bcrypt.compare(password, user_password);
+
+    return isPasswordValid;
+  }
+}
 export default mongoose.model<UserDocument>("User", userSchema);
