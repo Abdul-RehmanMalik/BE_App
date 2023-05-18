@@ -1,6 +1,9 @@
 import express from "express";
 import { AuthController } from "../controllers/auth";
 import { loginValidation, signUpValidation } from "../util/validation";
+import { authenticateAccessToken } from "../middleware/authenticatetoken";
+import { RequestUser } from "../types/RequestUser";
+import { UserRequest } from "../types/UserRequest";
 
 const authRouter = express.Router();
 const authController = new AuthController();
@@ -23,6 +26,17 @@ authRouter.post("/login", async (req, res) => {
     const response = await authController.login(body);
     res.send(response);
   } catch (err: any) {
+    res.status(err.code).send(err.message);
+  }
+});
+//logout route
+authRouter.post("/logout", authenticateAccessToken, async (req, res) => {
+  try {
+    const logoutResponse = await authController.logout(req);
+    console.log("in auth route try");
+    res.send(logoutResponse);
+  } catch (err: any) {
+    console.log("in auth route ,catch");
     res.status(err.code).send(err.message);
   }
 });

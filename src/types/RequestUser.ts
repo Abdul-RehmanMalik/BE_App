@@ -1,3 +1,3 @@
 export interface RequestUser {
-  userId: string;
+  id: Number;
 }

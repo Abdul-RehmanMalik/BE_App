@@ -1,6 +1,9 @@
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcrypt";
-
+import { connectToMongoDB } from "../util/dbConnection";
+import { getSequenceNextValue } from "../util/getSequenceNextValue";
+// var autoIncrement = require("mongoose-auto-increment");
+// autoIncrement.initialize(connectToMongoDB);
 export interface UserPayload {
   /**
    * name for user
@@ -31,6 +34,10 @@ const userSchema = new Schema<UserDocument>({
     type: String,
     required: true,
   },
+  id: {
+    type: Number,
+    unique: true,
+  },
   email: {
     type: String,
     required: true,
@@ -49,6 +56,15 @@ const userSchema = new Schema<UserDocument>({
     refreshToken: { type: String },
   },
 });
+
+//Hooks
+
+userSchema.pre("save", async function (next) {
+  if (this.isNew) {
+    this.id = await getSequenceNextValue("id");
+  }
+  next();
+});
 export class PasswordUtils {
   static async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
@@ -64,4 +80,5 @@ export class PasswordUtils {
     return isPasswordValid;
   }
 }
+
 export default mongoose.model<UserDocument>("User", userSchema);
