@@ -151,7 +151,7 @@ paths:
                 -
                     bearerAuth: []
             parameters: []
-    '/auth/activate?{token}&{id}':
+    '/auth/activate/{{token}&{id}}':
         post:
             operationId: ActivateUser
             responses:

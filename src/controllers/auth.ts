@@ -62,7 +62,7 @@ export class AuthController {
       activationToken: activationToken
     };
     user.save();
-    const activationLink = `http://localhost:${process.env.PORT}/auth/activate?token:${user.tokens.activationToken}&id:${user.id}`;
+    const activationLink = `http://localhost:${process.env.PORT}/auth/activate/${user.tokens.activationToken}/${user.id}`;
     sendSignUpEmail(user.email,user.name,activationLink);
     return "Sign Up Successful...!";
   }
@@ -137,7 +137,7 @@ export class AuthController {
 //   console.log(token);
 //   return activateUser(token);
 // }
-@Post("/activate?{token}&{id}")
+@Post("/activate/:{token}/:{id}")
 public async activateUser(
   @Request() req: express.Request,
   @Path() token: string, id : string
