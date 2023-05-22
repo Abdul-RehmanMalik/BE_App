@@ -83,7 +83,9 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/UserDetailsResponse'
+                                anyOf:
+                                    - {$ref: '#/components/schemas/UserDetailsResponse'}
+                                    - {type: string}
                             examples:
                                 'Example 1':
                                     value: {name: 'John Snow', email: johnSnow01@gmail.com, address: 'H#123 Block 2 Sector J, Abc Town, NY'}
@@ -107,7 +109,9 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/TokenResponse'
+                                anyOf:
+                                    - {$ref: '#/components/schemas/TokenResponse'}
+                                    - {type: string}
                             examples:
                                 'Example 1':
                                     value: {tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString}}
@@ -140,13 +144,40 @@ paths:
                         application/json:
                             schema:
                                 type: string
-            summary: 'Removes JWT tokens and returns success message'
+            summary: 'Verify and Removes JWT tokens and returns success message'
             tags:
                 - Auth
             security:
                 -
                     bearerAuth: []
             parameters: []
+    '/auth/activate?{token}&{id}':
+        post:
+            operationId: ActivateUser
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+            summary: 'Verify and Removes JWT activationToken and returns success message'
+            tags:
+                - Auth
+            security: []
+            parameters:
+                -
+                    in: path
+                    name: token
+                    required: true
+                    schema:
+                        type: string
+                -
+                    in: path
+                    name: id
+                    required: true
+                    schema:
+                        type: string
     '/user/{name}':
         get:
             operationId: GetUser
