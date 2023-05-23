@@ -8,7 +8,14 @@ export const loginValidation = (data: any): Joi.ValidationResult =>
     email: emailSchema.required(),
     password: passwordSchema.required(),
   }).validate(data);
-
+  export const resetPasswordValidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    password: passwordSchema.required(),
+  }).validate(data);
+  export const forgotPasswordValidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    email: emailSchema.required()
+  }).validate(data);
 export const signUpValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     name: usernameschema.required(),

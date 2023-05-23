@@ -4,8 +4,13 @@ import { connectToMongoDB } from "./util/dbConnection";
 import router from "./routes/index";
 import path from "path";
 import cors from "cors";
+import { ReturnCode, verifyEnvVariables } from "./util/verifyEnvVariables";
 const app = express();
 dotenv.config();
+
+
+if (verifyEnvVariables()) process.exit(ReturnCode.InvalidEnv);
+
 // port from env file
 const port = process.env.PORT;
 
@@ -13,21 +18,12 @@ app.use(express.json());
 app.use(cors());
 
 app.use(express.static(path.join(__dirname, "../public")));
-//Connect to mongoDb
-//this function will prevent server
-//from running if DB connection fails
+
 
 // router
 app.use("/", router);
 
-// app.get("/", () => {
-//   console.log("app get");
-// });
 
-//app listening on Port
-// app.listen(port, () => {
-//   console.log("server is running on ", port);
-// });
 const startServer = async () => {
   try {
     await connectToMongoDB();
