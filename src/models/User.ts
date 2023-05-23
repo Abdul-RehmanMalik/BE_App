@@ -1,10 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcrypt";
-import { connectToMongoDB } from "../util/dbConnection";
 import { getSequenceNextValue } from "../util/getSequenceNextValue";
-import { bool, boolean } from "joi";
-// var autoIncrement = require("mongoose-auto-increment");
-// autoIncrement.initialize(connectToMongoDB);
+
 export interface UserPayload {
   /**
    * name for user

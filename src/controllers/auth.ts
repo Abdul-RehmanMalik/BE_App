@@ -62,7 +62,7 @@ export class AuthController {
       activationToken: activationToken
     };
     user.save();
-    const activationLink = `http://localhost:${process.env.PORT}/auth/activate/${user.tokens.activationToken}/${user.id}`;
+    const activationLink = `http://${process.env.SERVER}${process.env.PORT}/auth/activate/${user.tokens.activationToken}/${user.id}`;
     sendSignUpEmail(user.email,user.name,activationLink);
     return "Sign Up Successful...!";
   }
@@ -131,18 +131,12 @@ export class AuthController {
     /**
    * @summary Verify and Removes JWT activationToken and returns success message
    */
-// @Post("/activate")
-// public async activateUser (
-// @Path('token') token:string) {
-//   console.log(token);
-//   return activateUser(token);
-// }
-@Post("/activate/:{token}/:{id}")
+
+@Post("/activate/{token}/{id}")
 public async activateUser(
   @Request() req: express.Request,
   @Path() token: string, id : string
 ): Promise<string> {
-  // Find the user by name.
   const user = await User.findOne({ id });
   if (!user) {
     throw {
@@ -153,6 +147,8 @@ public async activateUser(
 
   
   await removeTokensInDB(user.id);
+  user.isActivated=true;
+  user.save();
   return "Verification Successful"
 }
 }
@@ -161,11 +157,7 @@ const logout = async (req: UserRequest) => {
   await removeTokensInDB((req.user as RequestUser).id);
   return "Logged Out Successfully";
 };
-//activateUser
-// const activateUser = async (req: UserRequest) => {
-//   await removeTokensInDB((req.user as RequestUser).id);
-//   return "Verification Successful";
-// };
+
 
 const forgotPassword = async (
   req: Express.Request,

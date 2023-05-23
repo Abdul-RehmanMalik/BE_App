@@ -53,7 +53,7 @@ const authenticateToken = async (
   }
 };
  const authActivationToken = async (
-  req: Request,
+  req: UserRequest,
   res: Response,
   next: NextFunction,
   key: string
@@ -73,7 +73,7 @@ const authenticateToken = async (
     if (!user) {
       throw "Unauthorized";
     }
-    //req.user = user;
+    req.user = user;
     return next();
   } catch (error) {
     res.sendStatus(401);

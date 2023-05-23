@@ -2,7 +2,7 @@ import transporter from "./transporter";
 export const  sendSignUpEmail= async (email: string, name: string, activationLink:string) =>{
     try {
         
-        let mailOptions = {
+        const mailOptions = {
             from: process.env.EMAIL_SENDER,
             to: email,
             subject: 'Welcome to our website',
@@ -11,7 +11,7 @@ export const  sendSignUpEmail= async (email: string, name: string, activationLin
           
   
       
-      let info = await transporter.sendMail(mailOptions);
+      const info = await transporter.sendMail(mailOptions);
       console.log('Email sent: ' + info.response);
     } catch (error) {
       console.log('Error sending email:', error);
