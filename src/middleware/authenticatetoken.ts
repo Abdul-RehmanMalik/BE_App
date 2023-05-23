@@ -16,7 +16,15 @@ export const authenticateRefreshToken: RequestHandler = async (
   res,
   next
 ) => {
-  await authenticateToken(req, res, next, process.env.JWT_SECRET_ACCESS || "");
+  await authenticateToken(req, res, next, process.env.JWT_SECRET_REFRESH || "");
+};
+//
+export const authenticateActivationToken: RequestHandler = async (
+  req,
+  res,
+  next
+) => {
+  await authActivationToken(req, res, next, process.env.JWT_SECRET_VERIFICATION|| "");
 };
 //authenticateToken
 const authenticateToken = async (
@@ -35,6 +43,33 @@ const authenticateToken = async (
 
     const user = await verifyTokenInDB(data?.id, token);
 
+    if (!user) {
+      throw "Unauthorized";
+    }
+    req.user = user;
+    return next();
+  } catch (error) {
+    res.sendStatus(401);
+  }
+};
+ const authActivationToken = async (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction,
+  key: string
+) => {
+     console.log("Params:",req.params)
+     const {token,id} = req.params;
+     console.log("token:",token,"id:",id);
+
+  try {
+    if (!token) {
+      throw "Unauthorized";
+    }
+    const data: any = jwt.verify(token, key);
+    console.log("data:",data);
+    const user = await verifyTokenInDB(data?.id, token);
+    console.log("user:",user);
     if (!user) {
       throw "Unauthorized";
     }

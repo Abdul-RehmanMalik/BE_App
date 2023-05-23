@@ -1,9 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 import bcrypt from "bcrypt";
-import { connectToMongoDB } from "../util/dbConnection";
 import { getSequenceNextValue } from "../util/getSequenceNextValue";
-// var autoIncrement = require("mongoose-auto-increment");
-// autoIncrement.initialize(connectToMongoDB);
+
 export interface UserPayload {
   /**
    * name for user
@@ -26,7 +24,8 @@ export interface UserPayload {
   address: string;
 }
 interface UserDocument extends UserPayload, Document {
-  tokens: { accessToken: string; refreshToken: string };
+  tokens: { accessToken: string; refreshToken: string; activationToken: string };
+  isActivated: boolean
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -54,7 +53,11 @@ const userSchema = new Schema<UserDocument>({
   tokens: {
     accessToken: { type: String },
     refreshToken: { type: String },
+    activationToken : {type : String},
   },
+  isActivated: {
+    type: Boolean,
+  }
 });
 
 //Hooks

@@ -10,7 +10,7 @@ dotenv.config();
 const port = process.env.PORT;
 
 app.use(express.json());
-//app.use(cors());
+app.use(cors());
 
 app.use(express.static(path.join(__dirname, "../public")));
 //Connect to mongoDb

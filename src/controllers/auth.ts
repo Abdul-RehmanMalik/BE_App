@@ -1,10 +1,13 @@
 import User, { PasswordUtils, UserPayload } from "../models/User";
-import { Security, Route, Tags, Example, Post, Request, Body } from "tsoa";
+import { Security, Route, Tags, Example, Post, Request, Body,Path } from "tsoa";
 import { generateAccessTokenken } from "../util/generateAccessToken";
-import { generateRefreshToken } from "../util/generaterefreshtoken";
+import { generateRefreshToken } from "../util/generateRefreshtoken";
 import { RequestUser } from "../types/RequestUser";
 import { removeTokensInDB } from "../util/removeTokensInDB";
 import { UserRequest } from "../types/UserRequest";
+import { sendSignUpEmail } from "../util/signUpmail";
+import { generateActivationToken } from "../util/generateActivationtoken";
+import express from "express";
 
 @Route("/auth")
 @Tags("Auth")
@@ -19,7 +22,9 @@ export class AuthController {
     address: "H#123 Block 2 Sector J, Abc Town, NY",
   })
   @Post("/signup")
-  public async signUp(@Body() body: UserPayload): Promise<UserDetailsResponse> {
+  public async signUp(
+    @Body() body: UserPayload
+  ): Promise<UserDetailsResponse | string> {
     const { email, password, name, address } = body;
 
     // Check if the email already exists
@@ -42,13 +47,25 @@ export class AuthController {
       name,
       address,
     });
-    return {
-      email: user.email,
-      name: user.name,
-      address: user.address,
-    };
-  }
 
+    await user.save();
+    // return {
+    //   email: user.email,
+    //   name: user.name,
+    //   address: user.address,
+    // };
+    const activationToken = generateActivationToken(user.id);
+    console.log("userid", user.id);
+    user.tokens = {
+      accessToken: "",
+      refreshToken: "",
+      activationToken: activationToken
+    };
+    user.save();
+    const activationLink = `http://${process.env.SERVER}${process.env.PORT}/auth/activate/${user.tokens.activationToken}/${user.id}`;
+    sendSignUpEmail(user.email,user.name,activationLink);
+    return "Sign Up Successful...!";
+  }
   /**
    * @summary logs user in and returns access token
    *
@@ -62,7 +79,7 @@ export class AuthController {
   @Post("/login")
   public async login(
     @Body() body: { email: string; password: string }
-  ): Promise<TokenResponse> {
+  ): Promise<TokenResponse | string> {
     const { email, password } = body;
 
     // Find the user by email
@@ -89,29 +106,72 @@ export class AuthController {
     }
 
     // Generate a JSON Web Token
+    console.log("userid", user.id);
     const accessToken = generateAccessTokenken(user.id);
     const refreshToken = generateRefreshToken(user.id);
     console.log("userid", user.id);
     user.tokens = {
       accessToken: accessToken,
       refreshToken: refreshToken,
+      activationToken: "",
     };
     user.save();
-    return { tokens: user.tokens };
+    //return { tokens: user.tokens };
+    return "Login Successful...!";
   }
 
   /**
-   * @summary Removes JWT tokens and returns success message
+   * @summary Verify and Removes JWT tokens and returns success message
    */
   @Security("bearerAuth")
   @Post("/logout")
   public async logout(@Request() req?: UserRequest) {
     return logout(req!);
   }
+    /**
+   * @summary Verify and Removes JWT activationToken and returns success message
+   */
+
+@Post("/activate/{token}/{id}")
+public async activateUser(
+  @Request() req: express.Request,
+  @Path() token: string, id : string
+): Promise<string> {
+  const user = await User.findOne({ id });
+  if (!user) {
+    throw {
+      code: 404, // 404 means not found
+      message: "User not found.",
+    };
+  }
+
+  
+  await removeTokensInDB(user.id);
+  user.isActivated=true;
+  user.save();
+  return "Verification Successful"
 }
+}
+//logout
 const logout = async (req: UserRequest) => {
   await removeTokensInDB((req.user as RequestUser).id);
   return "Logged Out Successfully";
+};
+
+
+const forgotPassword = async (
+  req: Express.Request,
+  data: ForgotPasswordPayload
+) => {
+  const { email } = data;
+  const dbUser = await User.findOne({ email });
+  if (!dbUser)
+    throw {
+      code: 404,
+      message: "User Not Found",
+    };
+  // implementation for sending a token to user through email
+  //const accessToken = generateAccessTokenken(dbUser.id);
 };
 
 interface TokenResponse {
@@ -121,6 +181,14 @@ interface TokenResponse {
    */
   tokens: { accessToken: string; refreshToken: string };
 }
+interface ForgotPasswordPayload {
+  /**
+   * Email
+   * @example "abc@gmail.com"
+   */
+  email: string;
+}
+
 export interface UserDetailsResponse {
   email: string;
   name: string;

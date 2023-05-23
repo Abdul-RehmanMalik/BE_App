@@ -11,7 +11,8 @@ export const verifyTokenInDB = async (
   }
   if (
     dbUser.tokens.accessToken === token ||
-    dbUser.tokens.refreshToken === token
+    dbUser.tokens.refreshToken === token||
+    dbUser.tokens.activationToken === token
   ) {
     return {
       id: dbUser.id,

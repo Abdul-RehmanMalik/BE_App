@@ -1,9 +1,7 @@
 import express from "express";
 import { AuthController } from "../controllers/auth";
 import { loginValidation, signUpValidation } from "../util/validation";
-import { authenticateAccessToken } from "../middleware/authenticatetoken";
-import { RequestUser } from "../types/RequestUser";
-import { UserRequest } from "../types/UserRequest";
+import { authenticateAccessToken, authenticateActivationToken } from "../middleware/authenticatetoken";
 
 const authRouter = express.Router();
 const authController = new AuthController();
@@ -40,5 +38,19 @@ authRouter.post("/logout", authenticateAccessToken, async (req, res) => {
     res.status(err.code).send(err.message);
   }
 });
+//activation route
+authRouter.post("/activate/:token/:id", authenticateActivationToken, async (req, res) => {
+  const { token,id } = req.params;
+  
+  try {
+    console.log("in auth route try");
 
+    const response = await authController.activateUser(req, token,id);
+    res.send(response);
+  } catch (err: any) {
+    console.log("in auth route ,catch");
+
+    res.status(err.code).send(err.message);
+  }
+});
 export default authRouter;
