@@ -93,18 +93,20 @@ const authPasswordResetToken = async (
   next: NextFunction,
   key: string
 ) => {
-     console.log("Query:",req.query)
-     const {token,id} = req.query;
-     console.log("token:",token,"id:",id);
+    //  console.log("Query:",req.query)
+    //  const {token,id} = req.query;
+    //  console.log("token:",token,"id:",id);
+    const {token,id}= req.body;
+    console.log("token:",token,"id:",id);
 
   try {
     if (!token) {
       throw "Unauthorized";
     }    
-    const token_= String(token);
-    const data: any = jwt.verify(token_, key);
+    //const token_= String(token);
+    const data: any = jwt.verify(token, key);
     console.log("data:",data);
-    const user = await verifyTokenInDB(data?.id, token_);
+    const user = await verifyTokenInDB(data?.id, token);
     console.log("user:",user);
     if (!user) {
       throw "Unauthorized";

@@ -3,6 +3,8 @@ const emailSchema = Joi.string().email();
 const usernameschema = Joi.string().min(3).max(16);
 const passwordSchema = Joi.string().min(6).max(20);
 const addressSchema = Joi.string();
+const tokenSchema = Joi.string();
+const idSchema = Joi.number();
 export const loginValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     email: emailSchema.required(),
@@ -11,6 +13,9 @@ export const loginValidation = (data: any): Joi.ValidationResult =>
   export const resetPasswordValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     password: passwordSchema.required(),
+    email: emailSchema.required(),
+    token: tokenSchema.required(),
+    id: idSchema.required(),
   }).validate(data);
   export const forgotPasswordValidation = (data: any): Joi.ValidationResult =>
   Joi.object({

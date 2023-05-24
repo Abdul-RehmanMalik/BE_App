@@ -202,7 +202,7 @@ public async activateUser(
       passwordResetToken: passwordResetToken,
     };
     await user.save();
-    const passwordResetLink = `${process.env.SERVER}:${process.env.PORT}/auth/resetpassword?token=${user.tokens.passwordResetToken}&id=${user.id}`;
+    const passwordResetLink = `${process.env.FRONTEND_SERVER}:${process.env.FRONTEND_PORT}/resetpassword?token=${user.tokens.passwordResetToken}&id=${user.id}`;
     sendPasswordResetMail(user.email,user.name,passwordResetLink);
 
     return "Password reset mail sent...!";
@@ -210,12 +210,9 @@ public async activateUser(
   //reset password
   @Post("/resetpassword")
 public async resetPassword(
-  @Request() req: express.Request,
-  @Query() token: string,
-  @Query('id') id: string,
-  @Body() body: { password: string}
+  @Body() body: { password: string ; id : string ; token: string}
 ): Promise<string> {
-  const{password} = body;
+  const{password,id,token} = body;
   const user = await User.findOne({ id });
   if (!user) {
     throw {

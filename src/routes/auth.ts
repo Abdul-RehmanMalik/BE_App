@@ -65,7 +65,7 @@ authRouter.post("/resetpassword", authenticatePasswordResetToken, async (req, re
   if (error) return res.status(400).send(error.details[0].message)
   try {
     console.log("in auth route try");
-    const response = await authController.resetPassword(req, token_,id_,body);
+    const response = await authController.resetPassword(body);
     //res.redirect("");
     res.send(response);
   } catch (err: any) {
