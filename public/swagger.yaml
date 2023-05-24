@@ -47,11 +47,17 @@ components:
             properties:
                 tokens:
                     properties:
+                        activationToken:
+                            type: string
+                        passwordResetToken:
+                            type: string
                         refreshToken:
                             type: string
                         accessToken:
                             type: string
                     required:
+                        - activationToken
+                        - passwordResetToken
                         - refreshToken
                         - accessToken
                     type: object
@@ -114,7 +120,7 @@ paths:
                                     - {type: string}
                             examples:
                                 'Example 1':
-                                    value: {tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString}}
+                                    value: {tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
             summary: 'logs user in and returns access token'
             tags:
                 - Auth
@@ -151,7 +157,7 @@ paths:
                 -
                     bearerAuth: []
             parameters: []
-    '/auth/activate/{token}/{id}':
+    /auth/activate:
         post:
             operationId: ActivateUser
             responses:
@@ -167,17 +173,85 @@ paths:
             security: []
             parameters:
                 -
-                    in: path
+                    in: query
                     name: token
                     required: true
                     schema:
                         type: string
                 -
-                    in: path
+                    in: query
                     name: id
                     required: true
                     schema:
                         type: string
+    /auth/forgotpassword:
+        post:
+            operationId: ForgotPassword
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - {$ref: '#/components/schemas/TokenResponse'}
+                                    - {type: string}
+                            examples:
+                                'Example 1':
+                                    value: {tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
+            summary: 'sends a mail to user for password reset'
+            tags:
+                - Auth
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                email:
+                                    type: string
+                            required:
+                                - email
+                            type: object
+    /auth/resetpassword:
+        post:
+            operationId: ResetPassword
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+            tags:
+                - Auth
+            security: []
+            parameters:
+                -
+                    in: query
+                    name: token
+                    required: true
+                    schema:
+                        type: string
+                -
+                    in: query
+                    name: id
+                    required: true
+                    schema:
+                        type: string
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                password:
+                                    type: string
+                            required:
+                                - password
+                            type: object
     '/user/{name}':
         get:
             operationId: GetUser
