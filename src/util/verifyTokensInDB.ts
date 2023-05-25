@@ -17,6 +17,8 @@ export const verifyTokenInDB = async (
   ) {
     return {
       id: dbUser.id,
+      name: dbUser.name,
+      isActivated: dbUser.isActivated,
     };
   }
 

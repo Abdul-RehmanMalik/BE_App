@@ -67,6 +67,21 @@ components:
                 - tokens
             type: object
             additionalProperties: false
+        SessionResponse:
+            properties:
+                id:
+                    type: number
+                    format: double
+                name:
+                    type: string
+                isActivated:
+                    type: boolean
+            required:
+                - id
+                - name
+                - isActivated
+            type: object
+            additionalProperties: false
     securitySchemes:
         bearerAuth:
             type: http
@@ -228,28 +243,22 @@ paths:
             tags:
                 - Auth
             security: []
-            parameters:
-                -
-                    in: query
-                    name: token
-                    required: true
-                    schema:
-                        type: string
-                -
-                    in: query
-                    name: id
-                    required: true
-                    schema:
-                        type: string
+            parameters: []
             requestBody:
                 required: true
                 content:
                     application/json:
                         schema:
                             properties:
+                                token:
+                                    type: string
+                                id:
+                                    type: string
                                 password:
                                     type: string
                             required:
+                                - token
+                                - id
                                 - password
                             type: object
     '/user/{name}':
@@ -278,6 +287,26 @@ paths:
                     schema:
                         type: string
                     example: johnSnow01
+    /session:
+        get:
+            operationId: Session
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/SessionResponse'
+                            examples:
+                                'Example 1':
+                                    value: {id: 123, name: johnusername, isActivated: false}
+            summary: 'Get session info.'
+            tags:
+                - Session
+            security:
+                -
+                    bearerAuth: []
+            parameters: []
 servers:
     -
         url: /

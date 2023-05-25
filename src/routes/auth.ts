@@ -40,14 +40,14 @@ authRouter.post("/logout", authenticateAccessToken, async (req, res) => {
 });
 //activation route
 authRouter.post("/activate", authenticateActivationToken, async (req, res) => {
-  const { token,id } = req.query;
-  const token_= String(token);
-  const id_ = String(id)
+  
+  const token= String(req.query.token);
+  const id= String(req.query.id)
 
   try {
     console.log("in auth route try");
 
-    const response = await authController.activateUser(req, token_,id_);
+    const response = await authController.activateUser(req, token,id);
     //res.redirect("");
     res.send(response);
   } catch (err: any) {
