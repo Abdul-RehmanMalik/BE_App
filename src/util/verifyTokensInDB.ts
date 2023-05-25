@@ -9,18 +9,27 @@ export const verifyTokenInDB = async (
   if (!dbUser) {
     return undefined;
   }
-  if (
-    dbUser.tokens.accessToken === token ||
-    dbUser.tokens.refreshToken === token ||
-    dbUser.tokens.activationToken === token ||
-    dbUser.tokens.passwordResetToken === token
-  ) {
+  // if (
+  //   dbUser.tokens.accessToken === token ||
+  //   dbUser.tokens.refreshToken === token ||
+  //   dbUser.tokens.activationToken === token ||
+  //   dbUser.tokens.passwordResetToken === token
+  // ) {
+  //   return {
+  //     id: dbUser.id,
+  //     name: dbUser.name,
+  //     isActivated: dbUser.isActivated,
+  //   };
+  // }
+  // .includes will stop checking for other tokens
+  // as soon it finds a match
+  const tokenValues = Object.values(dbUser.tokens);
+  if (tokenValues.includes(token)) {
     return {
       id: dbUser.id,
       name: dbUser.name,
       isActivated: dbUser.isActivated,
     };
   }
-
   return undefined;
 };
