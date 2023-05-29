@@ -1,53 +1,54 @@
+declare global {
+  namespace NodeJS {
+    interface Process {
+      logger?: {
+        error: (message: string) => void;
+        info: (message: string) => void;
+        warn: (message: string) => void;
+      };
+    }
+  }
+}
 export enum MongoDBUriType {
-    MongoDBUri = 'mongodburl'
+  MONGODB_URI = 'mongodburl'
   }
   
   export enum PortType {
-    Port = '0000'
+    PORT = '0000'
   }
   
   export enum ServerType {
-    Server = 'http://localhost'
+    SERVER = 'http://localhost'
   }
   
   export enum JwtSecretAccessType {
-    JwtSecretAccess = 'jwtsecretkeyaccess'
+    JWT_SECRET_ACCESS = 'jwtsecretkeyaccess'
   }
   
   export enum JwtSecretRefreshType {
-    JwtSecretRefresh = 'jwtsecretkeyrefresh'
+    JWT_SECRET_REFRESH = 'jwtsecretkeyrefresh'
   }
   
   export enum JwtSecretVerificationType {
-    JwtSecretVerification = 'jwtsecretkeyverify'
+    JWT_SECRET_VERIFICATION = 'jwtsecretkeyverify'
   }
   
   export enum JwtSecretPassResetType {
-    JwtSecretPassReset = 'jwtsecretkeypassreset'
+    JWT_SECRET_PASSRESET = 'jwtsecretkeypassreset'
   }
   
   export enum EmailSenderType {
-    EmailSender = 'abcd@gmail.com'
+    EMAIL_SENDER = 'abcd@gmail.com'
   }
   
   export enum EmailSenderPasswordType {
-    EmailSenderPassword = 'abcpassword'
+    EMAIL_SENDER_PASSWORD = 'abcpassword'
   }
   export enum ReturnCode {
     Success,
     InvalidEnv
   }
-  declare global {
-    namespace NodeJS {
-      interface Process {
-        logger?: {
-          error: (message: string) => void;
-          info: (message: string) => void;
-          warn: (message: string) => void;
-        };
-      }
-    }
-  }
+
   const logger = {
     error: (message: string) => {
       console.error(`[ERROR]: ${message}`);
@@ -178,12 +179,14 @@ export enum MongoDBUriType {
     errors.push(...verifyEMAIL_SENDER_PASSWORD());
   
     if (errors.length) {
+      console.log("in error")
       process.logger?.error(
         `Invalid environment variable(s) provided: \n${errors.join('\n')}`
       );
+      console.log(errors);
       return ReturnCode.InvalidEnv;
     }
-  
+   
     return ReturnCode.Success;
   };
   

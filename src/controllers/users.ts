@@ -36,3 +36,8 @@ export class UserController {
     };
   }
 }
+export interface UserResponse {
+  id: number
+  name: string
+  isActivated: boolean
+}
