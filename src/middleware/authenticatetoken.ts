@@ -2,13 +2,19 @@ import { NextFunction, RequestHandler, Request, Response } from "express";
 import { verifyTokenInDB } from "../util/verifyTokensInDB";
 import jwt from "jsonwebtoken";
 import { UserRequest } from "../types/UserRequest";
+enum TokenType {
+  AccessToken = 'accessToken',
+  RefreshToken = 'refreshToken',
+  ActivationToken = 'activationToken',
+  PasswordResetToken = 'passwordResetToken',
+}
 //authenticateAccessToken
 export const authenticateAccessToken: RequestHandler = async (
   req,
   res,
   next
 ) => {
-  await authenticateToken(req, res, next, process.env.JWT_SECRET_ACCESS || "",'accessToken');
+  await authenticateToken(req, res, next, process.env.JWT_SECRET_ACCESS || "",TokenType.AccessToken);
 };
 //authenticateRefreshToken
 export const authenticateRefreshToken: RequestHandler = async (
@@ -16,7 +22,7 @@ export const authenticateRefreshToken: RequestHandler = async (
   res,
   next
 ) => {
-  await authenticateToken(req, res, next, process.env.JWT_SECRET_REFRESH || "",'refreshToken');
+  await authenticateToken(req, res, next, process.env.JWT_SECRET_REFRESH || "",TokenType.RefreshToken);
 };
 //
 export const authenticateActivationToken: RequestHandler = async (
@@ -24,14 +30,14 @@ export const authenticateActivationToken: RequestHandler = async (
   res,
   next
 ) => {
-  await authActivationToken(req, res, next, process.env.JWT_SECRET_VERIFICATION|| "",'activationToken');
+  await authActivationToken(req, res, next, process.env.JWT_SECRET_VERIFICATION|| "",TokenType.ActivationToken);
 };
 export const authenticatePasswordResetToken: RequestHandler = async (
   req,
   res,
   next
 ) => {
-  await authPasswordResetToken(req, res, next, process.env.JWT_SECRET_PASSRESET|| "",'passwordResetToken');
+  await authPasswordResetToken(req, res, next, process.env.JWT_SECRET_PASSRESET|| "",TokenType.PasswordResetToken);
 };
 //authenticateToken
 const authenticateToken = async (
@@ -39,7 +45,7 @@ const authenticateToken = async (
   res: Response,
   next: NextFunction,
   key: string,
-  tokenType:'accessToken' | 'refreshToken'
+  tokenType:TokenType
 ) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader?.split(" ")[1];
@@ -65,7 +71,7 @@ const authenticateToken = async (
   res: Response,
   next: NextFunction,
   key: string,
-  tokenType: 'activationToken'
+  tokenType: TokenType
 
 ) => {
   const {token,id}= req.body;
@@ -95,7 +101,7 @@ const authPasswordResetToken = async (
   res: Response,
   next: NextFunction,
   key: string,
-  tokenType: 'passwordResetToken'
+  tokenType: TokenType
 ) => {
     const {token,id}= req.body;
     console.log("token:",token,"id:",id);
