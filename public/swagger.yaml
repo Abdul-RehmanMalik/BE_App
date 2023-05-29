@@ -5,18 +5,32 @@ components:
     requestBodies: {}
     responses: {}
     schemas:
-        UserDetailsResponse:
+        TokenResponse:
             properties:
-                email:
-                    type: string
-                name:
-                    type: string
-                address:
-                    type: string
+                id:
+                    type: number
+                    format: double
+                    description: 'Access Token and Refresh Tokens'
+                    example: someRandomCryptoString
+                tokens:
+                    properties:
+                        activationToken:
+                            type: string
+                        passwordResetToken:
+                            type: string
+                        refreshToken:
+                            type: string
+                        accessToken:
+                            type: string
+                    required:
+                        - activationToken
+                        - passwordResetToken
+                        - refreshToken
+                        - accessToken
+                    type: object
             required:
-                - email
-                - name
-                - address
+                - id
+                - tokens
             type: object
             additionalProperties: false
         UserPayload:
@@ -43,28 +57,18 @@ components:
                 - address
             type: object
             additionalProperties: false
-        TokenResponse:
+        UserDetailsResponse:
             properties:
-                tokens:
-                    properties:
-                        activationToken:
-                            type: string
-                        passwordResetToken:
-                            type: string
-                        refreshToken:
-                            type: string
-                        accessToken:
-                            type: string
-                    required:
-                        - activationToken
-                        - passwordResetToken
-                        - refreshToken
-                        - accessToken
-                    type: object
-                    description: 'Access Token and Refresh Tokens'
-                    example: someRandomCryptoString
+                email:
+                    type: string
+                name:
+                    type: string
+                address:
+                    type: string
             required:
-                - tokens
+                - email
+                - name
+                - address
             type: object
             additionalProperties: false
         SessionResponse:
@@ -105,7 +109,7 @@ paths:
                         application/json:
                             schema:
                                 anyOf:
-                                    - {$ref: '#/components/schemas/UserDetailsResponse'}
+                                    - {$ref: '#/components/schemas/TokenResponse'}
                                     - {type: string}
                             examples:
                                 'Example 1':
@@ -135,7 +139,7 @@ paths:
                                     - {type: string}
                             examples:
                                 'Example 1':
-                                    value: {tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
+                                    value: {id: 0, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
             summary: 'logs user in and returns access token'
             tags:
                 - Auth
@@ -213,7 +217,7 @@ paths:
                                     - {type: string}
                             examples:
                                 'Example 1':
-                                    value: {tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
+                                    value: {id: 0, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
             summary: 'sends a mail to user for password reset'
             tags:
                 - Auth

@@ -25,6 +25,7 @@ export class SessionController {
   public async session(
     @Request() req: UserRequest
   ): Promise<SessionResponse> {
+    console.log("session api called");
     return session(req)
   }
 }

@@ -10,6 +10,7 @@ import { generateActivationToken } from "../util/generateActivationtoken";
 import express from "express";
 import { generatePasswordResetToken } from "../util/generatePasswordResetToken";
 import { sendPasswordResetMail } from "../util/passwordResetmail";
+import { sendPasswordToken } from "../util/sendPasswordResetToken";
 @Route("/auth")
 @Tags("Auth")
 export class AuthController {
@@ -25,7 +26,7 @@ export class AuthController {
   @Post("/signup")
   public async signUp(
     @Body() body: UserPayload
-  ): Promise<UserDetailsResponse | string> {
+  ): Promise<TokenResponse | string> {
     const { email, password, name, address } = body;
 
     // Check if the email already exists
@@ -56,27 +57,31 @@ export class AuthController {
     //   address: user.address,
     // };
     const activationToken = generateActivationToken(user.id);
+    const accessToken = generateAccessTokenken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
     console.log("userid", user.id);
     user.tokens = {
-      accessToken: "",
-      refreshToken: "",
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       activationToken: activationToken,
       passwordResetToken: "",
     };
     await user.save();
-    //query params
-    //add redirect url in act link
-    //how to get redirect url from FE
-    //const activationLink = `${process.env.SERVER}:${process.env.PORT}/auth/activate/${user.tokens.activationToken}/${user.id}`;
-    const activationLink = `${process.env.SERVER}:${process.env.PORT}/auth/activate?token=${user.tokens.activationToken}&id=${user.id}`;
+    const activationLink = `${process.env.FRONTEND_SERVER}:${process.env.FRONTEND_PORT}/home?token=${user.tokens.activationToken}&id=${user.id}`;
     sendSignUpEmail(user.email,user.name,activationLink);
-    return "Sign Up Successful...!";
+   // return "Sign Up Successful...!";
+   //return { tokens: user.tokens };
+       return {
+        id: user.id,
+      tokens: user.tokens
+    };
   }
   /**
    * @summary logs user in and returns access token
    *
    */
   @Example<TokenResponse>({
+    id: 0,
     tokens: {
       accessToken: "someRandomCryptoString",
       refreshToken: "someRandomCryptoString",
@@ -126,7 +131,11 @@ export class AuthController {
     };
     await user.save();
     //return { tokens: user.tokens };
-    return "Login Successful...!";
+    //return "Login Successful...!";
+    return {
+      id: user.id,
+      tokens: user.tokens
+    };
   }
 
   /**
@@ -143,10 +152,9 @@ export class AuthController {
 
 @Post("/activate")
 public async activateUser(
-  @Request() req: express.Request,
-  @Query() token: string,
-  @Query('id') id: string
+  @Body() body: {id : string ; token: string}
 ): Promise<string> {
+  const{id} = body;
   const user = await User.findOne({ id });
   if (!user) {
     throw {
@@ -171,6 +179,7 @@ public async activateUser(
    *
    */
   @Example<TokenResponse>({
+    id:0,
     tokens: {
       accessToken: "someRandomCryptoString",
       refreshToken: "someRandomCryptoString",
@@ -193,18 +202,37 @@ public async activateUser(
         message: "Invalid Email",
       };
     }
-    const passwordResetToken = generatePasswordResetToken(user.id);
-    console.log("userid", user.id);
-    user.tokens = {
-      accessToken: "",
-      refreshToken: "",
-      activationToken: "",
-      passwordResetToken: passwordResetToken,
-    };
-    await user.save();
-    const passwordResetLink = `${process.env.FRONTEND_SERVER}:${process.env.FRONTEND_PORT}/resetpassword?token=${user.tokens.passwordResetToken}&id=${user.id}`;
-    sendPasswordResetMail(user.email,user.name,passwordResetLink);
+    // const passwordResetToken = generatePasswordResetToken(user.id);
+    // console.log("userid", user.id);
+    // user.tokens = {
+    //   accessToken: "",
+    //   refreshToken: "",
+    //   activationToken: "",
+    //   passwordResetToken: passwordResetToken,
+    // };
+    // await user.save();
+    // const passwordResetLink = `${process.env.FRONTEND_SERVER}:${process.env.FRONTEND_PORT}/resetpassword?token=${user.tokens.passwordResetToken}&id=${user.id}`;
+    // sendPasswordResetMail(user.email,user.name,passwordResetLink);
+    await sendPasswordToken(user)
+    return "Password reset mail sent...!";
+  }
+  //resendPasswordToken
+  @Post("/resendpasswordtoken")
+  public async resendPasswordToken(
+    @Body() body: { email: string}
+  ): Promise<TokenResponse | string> {
+    const {email} = body;
 
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw {
+        code: 401, //401 Unauthorized is the status code to return when the client provides no credentials or invalid credentials.
+        message: "Invalid Email",
+      };
+    }
+     await sendPasswordToken(user)
     return "Password reset mail sent...!";
   }
   //reset password
@@ -243,6 +271,7 @@ interface TokenResponse {
    * Access Token and Refresh Tokens
    * @example "someRandomCryptoString"
    */
+  id: number;
   tokens: { accessToken: string; refreshToken: string; passwordResetToken: string; activationToken : string };
 }
 interface ForgotPasswordPayload {

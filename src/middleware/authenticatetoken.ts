@@ -68,11 +68,9 @@ const authenticateToken = async (
   tokenType: 'activationToken'
 
 ) => {
-     console.log("Query:",req.query)
-     const token = String(req.query.token);
-     const id = String(req.query.id);
-
-     console.log("token:",token,"id:",id);
+  const {token,id}= req.body;
+  console.log("token:",token,"id:",id);
+  console.log("token:",token,"id:",id);
 
   try {
     if (!token) {

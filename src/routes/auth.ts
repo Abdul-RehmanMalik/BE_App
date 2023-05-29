@@ -1,6 +1,6 @@
 import express from "express";
 import { AuthController } from "../controllers/auth";
-import { forgotPasswordValidation, loginValidation, resetPasswordValidation, signUpValidation } from "../util/validation";
+import { forgotPasswordValidation, loginValidation, resetPasswordValidation, signUpValidation, signUpVerificationValidation } from "../util/validation";
 import { authenticateAccessToken, authenticateActivationToken, authenticatePasswordResetToken } from "../middleware/authenticatetoken";
 
 const authRouter = express.Router();
@@ -41,13 +41,14 @@ authRouter.post("/logout", authenticateAccessToken, async (req, res) => {
 //activation route
 authRouter.post("/activate", authenticateActivationToken, async (req, res) => {
   
-  const token= String(req.query.token);
-  const id= String(req.query.id)
+  // const token= String(req.query.token);
+  // const id= String(req.query.id)
 
   try {
     console.log("in auth route try");
-
-    const response = await authController.activateUser(req, token,id);
+    const { error, value: body } = signUpVerificationValidation(req.body);
+    if (error) return res.status(400).send(error.details[0].message)
+    const response = await authController.activateUser(body);
     //res.redirect("");
     res.send(response);
   } catch (err: any) {
@@ -58,9 +59,6 @@ authRouter.post("/activate", authenticateActivationToken, async (req, res) => {
 });
 //reset password
 authRouter.post("/resetpassword", authenticatePasswordResetToken, async (req, res) => {
-  const { token,id } = req.query;
-  const token_= String(token);
-  const id_ = String(id)
   const { error, value: body } = resetPasswordValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message)
   try {

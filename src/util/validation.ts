@@ -17,6 +17,11 @@ export const loginValidation = (data: any): Joi.ValidationResult =>
     token: tokenSchema.required(),
     id: idSchema.required(),
   }).validate(data);
+  export const signUpVerificationValidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    token: tokenSchema.required(),
+    id: idSchema.required(),
+  }).validate(data);
   export const forgotPasswordValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     email: emailSchema.required()
