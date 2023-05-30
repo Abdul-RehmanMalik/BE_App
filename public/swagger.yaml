@@ -190,19 +190,21 @@ paths:
             tags:
                 - Auth
             security: []
-            parameters:
-                -
-                    in: query
-                    name: token
-                    required: true
-                    schema:
-                        type: string
-                -
-                    in: query
-                    name: id
-                    required: true
-                    schema:
-                        type: string
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                token:
+                                    type: string
+                                id:
+                                    type: string
+                            required:
+                                - token
+                                - id
+                            type: object
     /auth/forgotpassword:
         post:
             operationId: ForgotPassword
@@ -219,6 +221,33 @@ paths:
                                 'Example 1':
                                     value: {id: 0, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
             summary: 'sends a mail to user for password reset'
+            tags:
+                - Auth
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                email:
+                                    type: string
+                            required:
+                                - email
+                            type: object
+    /auth/resendpasswordtoken:
+        post:
+            operationId: ResendPasswordToken
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - {$ref: '#/components/schemas/TokenResponse'}
+                                    - {type: string}
             tags:
                 - Auth
             security: []

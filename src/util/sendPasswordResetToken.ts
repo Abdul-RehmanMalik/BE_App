@@ -1,7 +1,7 @@
 import User from "../models/User";
 import { generatePasswordResetToken } from "./generatePasswordResetToken";
 import { sendPasswordResetMail } from "./passwordResetmail";
-export const sendPasswordToken = async (user : any) => {
+export const sendPasswordResetToken = async (user : any) => {
     const passwordResetToken = generatePasswordResetToken(user.id);
     console.log("userid", user.id);
     user.tokens = {

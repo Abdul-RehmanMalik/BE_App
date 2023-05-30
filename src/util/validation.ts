@@ -5,10 +5,21 @@ const passwordSchema = Joi.string().min(6).max(20);
 const addressSchema = Joi.string();
 const tokenSchema = Joi.string();
 const idSchema = Joi.number();
+const titleSchema = Joi.string();
+const descriptionSchema = Joi.string();
+const dateSchema = Joi.date();
+const postedBySchema = Joi.string();
 export const loginValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     email: emailSchema.required(),
     password: passwordSchema.required(),
+  }).validate(data);
+  export const postValidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    title: titleSchema.required(),
+    description: descriptionSchema.required(),
+    date: dateSchema.required(),
+    postedBy: postedBySchema,
   }).validate(data);
   export const resetPasswordValidation = (data: any): Joi.ValidationResult =>
   Joi.object({

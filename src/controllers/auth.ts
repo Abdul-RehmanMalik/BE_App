@@ -1,5 +1,5 @@
 import User, { PasswordUtils, UserPayload } from "../models/User";
-import { Security, Route, Tags, Example, Post, Request, Body, Query } from "tsoa";
+import { Security,Get, Route, Tags, Example, Post, Request, Body, Query } from "tsoa";
 import { generateAccessTokenken } from "../util/generateAccessToken";
 import { generateRefreshToken } from "../util/generateRefreshtoken";
 import { RequestUser } from "../types/RequestUser";
@@ -10,7 +10,7 @@ import { generateActivationToken } from "../util/generateActivationtoken";
 import express from "express";
 import { generatePasswordResetToken } from "../util/generatePasswordResetToken";
 import { sendPasswordResetMail } from "../util/passwordResetmail";
-import { sendPasswordToken } from "../util/sendPasswordResetToken";
+import { sendPasswordResetToken } from "../util/sendPasswordResetToken";
 @Route("/auth")
 @Tags("Auth")
 export class AuthController {
@@ -48,6 +48,7 @@ export class AuthController {
       password: hashedPassword,
       name,
       address,
+      isActivated: false
     });
 
     await user.save();
@@ -73,7 +74,8 @@ export class AuthController {
    //return { tokens: user.tokens };
        return {
         id: user.id,
-      tokens: user.tokens
+      tokens: user.tokens,
+      isActivated: user.isActivated,
     };
   }
   /**
@@ -82,6 +84,7 @@ export class AuthController {
    */
   @Example<TokenResponse>({
     id: 0,
+    isActivated: false,
     tokens: {
       accessToken: "someRandomCryptoString",
       refreshToken: "someRandomCryptoString",
@@ -134,7 +137,8 @@ export class AuthController {
     //return "Login Successful...!";
     return {
       id: user.id,
-      tokens: user.tokens
+      tokens: user.tokens,
+      isActivated: user.isActivated,
     };
   }
 
@@ -142,7 +146,7 @@ export class AuthController {
    * @summary Verify and Removes JWT tokens and returns success message
    */
   @Security("bearerAuth")
-  @Post("/logout")
+  @Get("/logout")
   public async logout(@Request() req?: UserRequest) {
     return logout(req!);
   }
@@ -153,7 +157,7 @@ export class AuthController {
 @Post("/activate")
 public async activateUser(
   @Body() body: {id : string ; token: string}
-): Promise<string> {
+): Promise<TokenResponse | string> {
   const{id} = body;
   const user = await User.findOne({ id });
   if (!user) {
@@ -169,7 +173,21 @@ public async activateUser(
   //generate access token
   //then redirect to FE
   await user.save();
-  return "Verification Successful"
+  const accessToken = generateAccessTokenken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
+  user.tokens = {
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+    activationToken: "",
+    passwordResetToken: "",
+  };
+  await user.save();
+  return {
+    id: user.id,
+    tokens: user.tokens,
+    isActivated: user.isActivated,
+  };
+  //return "Verification Successful"
   //return redirect url
 }
 //forgot Password
@@ -180,6 +198,7 @@ public async activateUser(
    */
   @Example<TokenResponse>({
     id:0,
+    isActivated: false,
     tokens: {
       accessToken: "someRandomCryptoString",
       refreshToken: "someRandomCryptoString",
@@ -202,18 +221,7 @@ public async activateUser(
         message: "Invalid Email",
       };
     }
-    // const passwordResetToken = generatePasswordResetToken(user.id);
-    // console.log("userid", user.id);
-    // user.tokens = {
-    //   accessToken: "",
-    //   refreshToken: "",
-    //   activationToken: "",
-    //   passwordResetToken: passwordResetToken,
-    // };
-    // await user.save();
-    // const passwordResetLink = `${process.env.FRONTEND_SERVER}:${process.env.FRONTEND_PORT}/resetpassword?token=${user.tokens.passwordResetToken}&id=${user.id}`;
-    // sendPasswordResetMail(user.email,user.name,passwordResetLink);
-    await sendPasswordToken(user)
+    await sendPasswordResetToken(user)
     return "Password reset mail sent...!";
   }
   //resendPasswordToken
@@ -232,7 +240,7 @@ public async activateUser(
         message: "Invalid Email",
       };
     }
-     await sendPasswordToken(user)
+     await sendPasswordResetToken(user)
     return "Password reset mail sent...!";
   }
   //reset password
@@ -272,6 +280,7 @@ interface TokenResponse {
    * @example "someRandomCryptoString"
    */
   id: number;
+  isActivated: boolean;
   tokens: { accessToken: string; refreshToken: string; passwordResetToken: string; activationToken : string };
 }
 interface ForgotPasswordPayload {
