@@ -7,9 +7,6 @@ import { removeTokensInDB } from "../util/removeTokensInDB";
 import { UserRequest } from "../types/UserRequest";
 import { sendSignUpEmail } from "../util/signUpmail";
 import { generateActivationToken } from "../util/generateActivationtoken";
-import express from "express";
-import { generatePasswordResetToken } from "../util/generatePasswordResetToken";
-import { sendPasswordResetMail } from "../util/passwordResetmail";
 import { sendPasswordResetToken } from "../util/sendPasswordResetToken";
 @Route("/auth")
 @Tags("Auth")
@@ -52,11 +49,6 @@ export class AuthController {
     });
 
     await user.save();
-    // return {
-    //   email: user.email,
-    //   name: user.name,
-    //   address: user.address,
-    // };
     const activationToken = generateActivationToken(user.id);
     const accessToken = generateAccessTokenken(user.id);
     const refreshToken = generateRefreshToken(user.id);
@@ -70,8 +62,6 @@ export class AuthController {
     await user.save();
     const activationLink = `${process.env.FRONTEND_SERVER}:${process.env.FRONTEND_PORT}/home?token=${user.tokens.activationToken}&id=${user.id}`;
     sendSignUpEmail(user.email,user.name,activationLink);
-   // return "Sign Up Successful...!";
-   //return { tokens: user.tokens };
        return {
         id: user.id,
       tokens: user.tokens,
@@ -133,8 +123,6 @@ export class AuthController {
       passwordResetToken: "",
     };
     await user.save();
-    //return { tokens: user.tokens };
-    //return "Login Successful...!";
     return {
       id: user.id,
       tokens: user.tokens,
@@ -170,8 +158,6 @@ public async activateUser(
   
   await removeTokensInDB(user.id);
   user.isActivated=true;
-  //generate access token
-  //then redirect to FE
   await user.save();
   const accessToken = generateAccessTokenken(user.id);
   const refreshToken = generateRefreshToken(user.id);
@@ -187,11 +173,8 @@ public async activateUser(
     tokens: user.tokens,
     isActivated: user.isActivated,
   };
-  //return "Verification Successful"
-  //return redirect url
 }
 //forgot Password
-
   /**
    * @summary sends a mail to user for password reset
    *
@@ -256,8 +239,6 @@ public async resetPassword(
       message: "User not found.",
     };
   }
-
-  
   await removeTokensInDB(user.id);
   await user.save();
       // Hash the password
@@ -265,7 +246,6 @@ public async resetPassword(
   user.password= hashedPassword;
  await user.save();
   return "Successfully Changed Password"
-  //return redirect url
 }
 }
 //logout

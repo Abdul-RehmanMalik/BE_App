@@ -1,7 +1,7 @@
-import express from "express";
 import { PostPayload } from "../models/Posts";
-import { Route, Path, Get, Request, Tags, Example , Post,Body} from "tsoa";
+import { Route,Put,Tags,Post,Body,Request} from "tsoa";
 import Posts from "../models/Posts";
+import { UserRequest } from "../types/UserRequest";
 @Route("/posts")
 @Tags("Post")
 export class PostController {
@@ -28,6 +28,63 @@ public async createPost (
     }
 
 }
+@Put('/like')
+public async likePost(
+@Body() body: { postId: string; userId: string }
+): Promise<PostResponse> {
+  try {
+    const { postId, userId } = body;
+    const response = await Posts.findByIdAndUpdate(
+      postId,
+      { $push: { likes: userId } },
+      { new: true }
+    );
+   // return response;
+  } catch (error: any) {
+    
+    throw error;
+  }
+}
+@Put('/unlike')
+public async unlikePost(
+@Body() body: { postId: string; userId: string }
+): Promise<PostResponse> {
+  try {
+    const { postId, userId } = body;
+    const response = await Posts.findByIdAndUpdate(
+      postId,
+      { $pull: { likes: userId } },
+      { new: true }
+    );
+    //return response
+} catch (error: any) {
+    
+    throw error;
+  }
+}
+public async addComment(
+    @Request() request: UserRequest,
+    @Body() body: {postId: string; text: string}
+    ): Promise<PostResponse> {
+    try {
+      const { postId, text } = body;
+      const comment = {
+        text,
+        postedBy: request.user,
+      };
+      const result = await Posts.findByIdAndUpdate(
+        postId,
+        { $push: { comments: comment } },
+        { new: true }
+      )
+        .populate('comments.postedBy', '_id name')
+        .populate('postedBy', '_id name')
+        .exec();
+      return result;
+    } catch (error: any) {
+      throw error;
+    }
+  }
 
 }
 interface PostResponse {
@@ -37,4 +94,5 @@ interface PostResponse {
      */
     title: string;
     description: string;
+    likes: string[]
   }

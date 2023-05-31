@@ -31,30 +31,22 @@ authRouter.post("/login", async (req, res) => {
 authRouter.get("/logout", authenticateAccessToken, async (req, res) => {
   try {
     const logoutResponse = await authController.logout(req);
-    console.log("in auth route try");
-    console.log("logout Response:",logoutResponse)
     res.send(logoutResponse);
   } catch (err: any) {
-    console.log("in auth route ,catch");
     res.status(err.code).send(err.message);
   }
 });
 //activation route
 authRouter.post("/activate", authenticateActivationToken, async (req, res) => {
-  
-  // const token= String(req.query.token);
-  // const id= String(req.query.id)
+
 
   try {
-    console.log("in auth route try act");
     const { error, value: body } = signUpVerificationValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message)
     const response = await authController.activateUser(body);
     //res.redirect("");
     res.send(response);
   } catch (err: any) {
-    console.log("in auth route ,catch");
-
     res.status(err.code).send(err.message);
   }
 });
@@ -63,12 +55,10 @@ authRouter.post("/resetpassword", authenticatePasswordResetToken, async (req, re
   const { error, value: body } = resetPasswordValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message)
   try {
-    console.log("in auth route try");
     const response = await authController.resetPassword(body);
     //res.redirect("");
     res.send(response);
   } catch (err: any) {
-    console.log("in auth route ,catch");
     res.status(err.code).send(err.message);
   }
 });

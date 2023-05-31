@@ -27,7 +27,8 @@ interface PostDocument extends Document {
   image: string;
   date: Date;
   postedBy: Schema.Types.ObjectId;
-
+  likes : Schema.Types.ObjectId[];
+  comments: Schema.Types.ObjectId[];
 
 }
 
@@ -52,6 +53,12 @@ const postSchema = new Schema<PostDocument>({
     ref: "User",
     required: true,
   },
+  likes:[{ type: Schema.Types.ObjectId, ref:"User"}],
+  comments:[{
+      text:String,
+      postedBy:{type:Schema.Types.ObjectId,
+      ref:"User"}
+  }],
   
 });
 

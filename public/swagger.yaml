@@ -12,6 +12,8 @@ components:
                     format: double
                     description: 'Access Token and Refresh Tokens'
                     example: someRandomCryptoString
+                isActivated:
+                    type: boolean
                 tokens:
                     properties:
                         activationToken:
@@ -30,6 +32,7 @@ components:
                     type: object
             required:
                 - id
+                - isActivated
                 - tokens
             type: object
             additionalProperties: false
@@ -69,6 +72,16 @@ components:
                 - email
                 - name
                 - address
+            type: object
+            additionalProperties: false
+        UserSearchResponse:
+            properties:
+                users:
+                    items:
+                        $ref: '#/components/schemas/UserDetailsResponse'
+                    type: array
+            required:
+                - users
             type: object
             additionalProperties: false
         SessionResponse:
@@ -139,7 +152,7 @@ paths:
                                     - {type: string}
                             examples:
                                 'Example 1':
-                                    value: {id: 0, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
+                                    value: {id: 0, isActivated: false, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
             summary: 'logs user in and returns access token'
             tags:
                 - Auth
@@ -160,7 +173,7 @@ paths:
                                 - email
                             type: object
     /auth/logout:
-        post:
+        get:
             operationId: Logout
             responses:
                 '200':
@@ -185,7 +198,9 @@ paths:
                     content:
                         application/json:
                             schema:
-                                type: string
+                                anyOf:
+                                    - {$ref: '#/components/schemas/TokenResponse'}
+                                    - {type: string}
             summary: 'Verify and Removes JWT activationToken and returns success message'
             tags:
                 - Auth
@@ -219,7 +234,7 @@ paths:
                                     - {type: string}
                             examples:
                                 'Example 1':
-                                    value: {id: 0, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
+                                    value: {id: 0, isActivated: false, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
             summary: 'sends a mail to user for password reset'
             tags:
                 - Auth
@@ -320,6 +335,31 @@ paths:
                     schema:
                         type: string
                     example: johnSnow01
+    /user/searchuser:
+        post:
+            operationId: SearchUser
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UserSearchResponse'
+            tags:
+                - User
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                query:
+                                    type: string
+                            required:
+                                - query
+                            type: object
     /session:
         get:
             operationId: Session
