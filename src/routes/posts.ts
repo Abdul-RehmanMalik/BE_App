@@ -4,13 +4,36 @@ import { postValidation } from "../util/validation";
 const postRouter = express.Router();
 const postController = new PostController();
 
-postRouter.post("/posts/createpost", async (req, res) => {
+postRouter.post("/createpost", async (req, res) => {
     const { error, value: body } = postValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message);
     try {
+      console.log("in try")
       const response = await postController.createPost(req.body);
       res.send(response);
     } catch (err: any) {
+      console.log("in catch")
         res.status(err.code).send(err.message);
     }
   });
+  postRouter.put("/like", async (req, res) => {
+    try {
+      console.log("in try")
+      const response = await postController.likePost(req.body);
+      res.send(response);
+    } catch (err: any) {
+      console.log("in catch")
+        res.status(err.code).send(err.message);
+    }
+  });
+  postRouter.put("/unlike", async (req, res) => {
+    try {
+      console.log("in try")
+      const response = await postController.unlikePost(req.body);
+      res.send(response);
+    } catch (err: any) {
+      console.log("in catch")
+        res.status(err.code).send(err.message);
+    }
+  });
+  export default postRouter;

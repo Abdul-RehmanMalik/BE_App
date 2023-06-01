@@ -12,11 +12,12 @@ public async createPost (
 ) : Promise<PostResponse | string> 
 {
     try {
-        const { title, description, date, postedBy } = body;
+        const { title, description, postedBy } = body;
+        console.log(body)
         const newPost = new Posts ({
            title,
            description,
-           date: new Date(date),
+           date: new Date(),
            postedBy
         });
         await newPost.save();
@@ -30,16 +31,23 @@ public async createPost (
 }
 @Put('/like')
 public async likePost(
-@Body() body: { postId: string; userId: string }
+@Body() body: { pid: number; userId: number }
 ): Promise<PostResponse> {
   try {
-    const { postId, userId } = body;
-    const response = await Posts.findByIdAndUpdate(
-      postId,
-      { $push: { likes: userId } },
-      { new: true }
-    );
-   // return response;
+    const { pid, userId } = body;
+    const post = await Posts.findOne({pid})
+    if(!post)
+    {
+      throw {
+        code: 404, // 404 means not found
+        message: "Post not found.",
+      };  
+      }
+      if (!post.likes.includes(userId)) {
+        post.likes.push(userId);
+        await post.save();
+      }
+    return post;
   } catch (error: any) {
     
     throw error;
@@ -47,44 +55,56 @@ public async likePost(
 }
 @Put('/unlike')
 public async unlikePost(
-@Body() body: { postId: string; userId: string }
+@Body() body: { pid: number; userId: number; }
 ): Promise<PostResponse> {
   try {
-    const { postId, userId } = body;
-    const response = await Posts.findByIdAndUpdate(
-      postId,
-      { $pull: { likes: userId } },
-      { new: true }
-    );
-    //return response
+    const { pid, userId } = body;
+    const post = await Posts.findOne({pid})
+     if(!post)
+     {
+      throw {
+        code: 404, // 404 means not found
+        message: "Post not found.",
+      };  
+     }
+     const index = post.likes.indexOf(userId);
+     if (index !== -1) {
+       post.likes.splice(index, 1);
+     }
+     await post.save();
+
+         return post;
 } catch (error: any) {
     
     throw error;
   }
 }
-public async addComment(
-    @Request() request: UserRequest,
-    @Body() body: {postId: string; text: string}
-    ): Promise<PostResponse> {
-    try {
-      const { postId, text } = body;
-      const comment = {
-        text,
-        postedBy: request.user,
-      };
-      const result = await Posts.findByIdAndUpdate(
-        postId,
-        { $push: { comments: comment } },
-        { new: true }
-      )
-        .populate('comments.postedBy', '_id name')
-        .populate('postedBy', '_id name')
-        .exec();
-      return result;
-    } catch (error: any) {
-      throw error;
-    }
-  }
+// public async addComment(
+//     @Body() body: {pid: number; text: string; postedBy: string}
+//     ): Promise<PostResponse> {
+//     try {
+//       const { pid, text , postedBy} = body;
+//       const comment = {
+//         text: text,
+//         postedBy: postedBy,
+//       };
+//       const post = await Posts.findOne({pid})
+//           if(!post)
+//           {
+//             throw {
+//               code: 404, // 404 means not found
+//               message: "Post not found.",
+//             };  
+//           }
+//           post.comments.push({
+//             text: comment.text,
+//             postedBy: comment.postedBy,
+//           });
+//       return post;
+//     } catch (error: any) {
+//       throw error;
+//     }
+//   }
 
 }
 interface PostResponse {
@@ -92,7 +112,9 @@ interface PostResponse {
      * Post Response
      * @example "title: abc, description: some description of a post"
      */
+    pid: number;
     title: string;
     description: string;
-    likes: string[]
+    likes: number[];
+    comments: string[]
   }

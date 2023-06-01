@@ -64,6 +64,7 @@ export class AuthController {
     sendSignUpEmail(user.email,user.name,activationLink);
        return {
         id: user.id,
+        name: user.name,
       tokens: user.tokens,
       isActivated: user.isActivated,
     };
@@ -74,6 +75,7 @@ export class AuthController {
    */
   @Example<TokenResponse>({
     id: 0,
+    name: "Johny",
     isActivated: false,
     tokens: {
       accessToken: "someRandomCryptoString",
@@ -124,6 +126,7 @@ export class AuthController {
     };
     await user.save();
     return {
+      name: user.name,
       id: user.id,
       tokens: user.tokens,
       isActivated: user.isActivated,
@@ -169,6 +172,7 @@ public async activateUser(
   };
   await user.save();
   return {
+    name: user.name,
     id: user.id,
     tokens: user.tokens,
     isActivated: user.isActivated,
@@ -181,6 +185,7 @@ public async activateUser(
    */
   @Example<TokenResponse>({
     id:0,
+    name: "Johny",
     isActivated: false,
     tokens: {
       accessToken: "someRandomCryptoString",
@@ -260,6 +265,7 @@ interface TokenResponse {
    * @example "someRandomCryptoString"
    */
   id: number;
+  name : string;
   isActivated: boolean;
   tokens: { accessToken: string; refreshToken: string; passwordResetToken: string; activationToken : string };
 }

@@ -18,7 +18,6 @@ export const loginValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     title: titleSchema.required(),
     description: descriptionSchema.required(),
-    date: dateSchema.required(),
     postedBy: postedBySchema,
   }).validate(data);
   export const resetPasswordValidation = (data: any): Joi.ValidationResult =>

@@ -12,6 +12,8 @@ components:
                     format: double
                     description: 'Access Token and Refresh Tokens'
                     example: someRandomCryptoString
+                name:
+                    type: string
                 isActivated:
                     type: boolean
                 tokens:
@@ -32,6 +34,7 @@ components:
                     type: object
             required:
                 - id
+                - name
                 - isActivated
                 - tokens
             type: object
@@ -99,6 +102,54 @@ components:
                 - isActivated
             type: object
             additionalProperties: false
+        PostResponse:
+            properties:
+                pid:
+                    type: number
+                    format: double
+                    description: 'Post Response'
+                    example: 'title: abc, description: some description of a post'
+                title:
+                    type: string
+                description:
+                    type: string
+                likes:
+                    items:
+                        type: number
+                        format: double
+                    type: array
+                comments:
+                    items:
+                        type: string
+                    type: array
+            required:
+                - pid
+                - title
+                - description
+                - likes
+                - comments
+            type: object
+            additionalProperties: false
+        PostPayload:
+            properties:
+                title:
+                    type: string
+                    description: 'title of post'
+                    example: ""
+                description:
+                    type: string
+                    description: 'description of post'
+                    example: ""
+                postedBy:
+                    type: string
+                    description: postedBy
+                    example: ""
+            required:
+                - title
+                - description
+                - postedBy
+            type: object
+            additionalProperties: false
     securitySchemes:
         bearerAuth:
             type: http
@@ -152,7 +203,7 @@ paths:
                                     - {type: string}
                             examples:
                                 'Example 1':
-                                    value: {id: 0, isActivated: false, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
+                                    value: {id: 0, name: Johny, isActivated: false, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
             summary: 'logs user in and returns access token'
             tags:
                 - Auth
@@ -234,7 +285,7 @@ paths:
                                     - {type: string}
                             examples:
                                 'Example 1':
-                                    value: {id: 0, isActivated: false, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
+                                    value: {id: 0, name: Johny, isActivated: false, tokens: {accessToken: someRandomCryptoString, refreshToken: someRandomCryptoString, passwordResetToken: someRandomCryptoString, activationToken: someRandomCryptoString}}
             summary: 'sends a mail to user for password reset'
             tags:
                 - Auth
@@ -380,6 +431,88 @@ paths:
                 -
                     bearerAuth: []
             parameters: []
+    /posts/createpost:
+        post:
+            operationId: CreatePost
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - {$ref: '#/components/schemas/PostResponse'}
+                                    - {type: string}
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PostPayload'
+    /posts/like:
+        put:
+            operationId: LikePost
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PostResponse'
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                userId:
+                                    type: number
+                                    format: double
+                                pid:
+                                    type: number
+                                    format: double
+                            required:
+                                - userId
+                                - pid
+                            type: object
+    /posts/unlike:
+        put:
+            operationId: UnlikePost
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PostResponse'
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                userId:
+                                    type: number
+                                    format: double
+                                pid:
+                                    type: number
+                                    format: double
+                            required:
+                                - userId
+                                - pid
+                            type: object
 servers:
     -
         url: /
