@@ -16,12 +16,17 @@ export interface PostPayload {
    * @example ""
    */
   postedBy: string;
+      /**
+   * Image
+   * @example ""
+   */
+    image?: string;
 }
 interface PostDocument extends Document {
   pid: number,
   title: string;
   description: string;
-  image: string;
+  image?: string;
   date: Date;
   postedBy: string;
   likes : number[];

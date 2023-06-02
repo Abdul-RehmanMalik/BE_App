@@ -1,15 +1,17 @@
 import express from "express";
 import { PostController } from "../controllers/posts";
 import { postValidation } from "../util/validation";
+import { upload } from "../middleware/multermiddleware";
 const postRouter = express.Router();
 const postController = new PostController();
 
-postRouter.post("/createpost", async (req, res) => {
-    const { error, value: body } = postValidation(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+postRouter.post("/createpost",upload.single('image'), async (req, res) => {
+    // const { error, value: body } = postValidation(req.body);
+    // if (error) return res.status(400).send(error.details[0].message);
     try {
       console.log("in try")
-      const response = await postController.createPost(req.body);
+      console.log("Req Body Route:", req.body.image)
+      const response = await postController.createPost(req,req.body);
       res.send(response);
     } catch (err: any) {
       console.log("in catch")

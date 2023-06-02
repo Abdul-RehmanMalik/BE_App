@@ -144,6 +144,10 @@ components:
                     type: string
                     description: postedBy
                     example: ""
+                image:
+                    type: string
+                    description: Image
+                    example: ""
             required:
                 - title
                 - description

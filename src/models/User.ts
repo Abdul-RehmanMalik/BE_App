@@ -26,6 +26,7 @@ export interface UserPayload {
 interface UserDocument extends UserPayload, Document {
   tokens: { accessToken: string; refreshToken: string; activationToken: string; passwordResetToken: string };
   isActivated: boolean
+  profilePicture: string
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -49,6 +50,10 @@ const userSchema = new Schema<UserDocument>({
   address: {
     type: String,
     required: true,
+  },
+  profilePicture: {
+    type: String,
+    default: null,
   },
   tokens: {
     accessToken: { type: String },

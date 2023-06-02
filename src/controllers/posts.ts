@@ -1,34 +1,44 @@
 import { PostPayload } from "../models/Posts";
-import { Route,Put,Tags,Post,Body,Request} from "tsoa";
+import { UploadedFile,Route,Put,Tags,Post,Body,Request} from "tsoa";
 import Posts from "../models/Posts";
+import fs from 'fs';
+import multer from "multer";
 import { UserRequest } from "../types/UserRequest";
 @Route("/posts")
 @Tags("Post")
 export class PostController {
 
+
 @Post("/createpost")
-public async createPost (
-@Body() body: PostPayload
-) : Promise<PostResponse | string> 
-{
-    try {
-        const { title, description, postedBy } = body;
-        console.log(body)
-        const newPost = new Posts ({
-           title,
-           description,
-           date: new Date(),
-           postedBy
-        });
-        await newPost.save();
-        return "Posted Successfully"
+public async createPost(
+  @Request () req : Express.Request,
+  @Body() body: PostPayload
+): Promise<PostResponse | string> {
+  try {
+    const { title, description, postedBy } = body;
+     const image = req.file;
+     let imageBuffer: Buffer | undefined;
+     if (image) {
+       imageBuffer = fs.readFileSync(image.path);
+     } 
+    console.log("body:", image);
 
-    }catch(error: any)
-    {
-        throw error
-    }
+    const newPost = new Posts({
+      title,
+      description,
+      image: imageBuffer,
+      date: new Date(),
+      postedBy,
+    });
 
+    await newPost.save();
+    return "Posted Successfully";
+  } catch (error: any) {
+    throw error;
+  }
 }
+
+
 @Put('/like')
 public async likePost(
 @Body() body: { pid: number; userId: number }
@@ -117,4 +127,13 @@ interface PostResponse {
     description: string;
     likes: number[];
     comments: string[]
+  }interface FileUpload {
+    fieldname: string;
+    originalname: string;
+    encoding: string;
+    mimetype: string;
+    destination: string;
+    filename: string;
+    path: string;
+    size: number;
   }
