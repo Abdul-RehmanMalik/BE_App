@@ -1,37 +1,36 @@
-import mongoose, { Document, Schema } from "mongoose";
-import { getSequenceNextValuePost } from "../util/getSeqNextValuePost";
+import mongoose, { Document, Schema } from 'mongoose'
+import { getSequenceNextValue } from '../util/getSequenceNextValue'
 export interface PostPayload {
   /**
    * title of post
    * @example ""
    */
-  title: string;
+  title: string
   /**
    * description of post
    * @example ""
    */
-  description: string;
-    /**
+  description: string
+  /**
    * postedBy
    * @example ""
    */
-  postedBy: string;
-      /**
+  postedBy: string
+  /**
    * Image
    * @example ""
    */
-    image?: string;
+  images?: string[]
 }
-interface PostDocument extends Document {
-  pid: number,
-  title: string;
-  description: string;
-  image?: string;
-  date: Date;
-  postedBy: string;
-  likes : number[];
-  comments: string[];
-
+export interface PostDocument extends Document {
+  pid: number
+  title: string
+  description: string
+  images?: string[]
+  date: Date
+  postedBy: string
+  likes: number[]
+  comments: string[]
 }
 
 const postSchema = new Schema<PostDocument>({
@@ -47,27 +46,26 @@ const postSchema = new Schema<PostDocument>({
     type: String,
     required: true,
   },
-  image: {
-    type: String,
-  },
+  images: [{ type: String }],
   date: {
     type: Date,
     default: Date.now,
   },
   postedBy: {
     type: String,
-    },
-  likes:[{ type: Number}],
-  comments:[{
-      text:String,
+  },
+  likes: [{ type: Number }],
+  comments: [
+    {
+      text: String,
       postedBy: String,
-  }],
-  
-});
-postSchema.pre("save", async function (next) {
+    },
+  ],
+})
+postSchema.pre('save', async function (next) {
   if (this.isNew) {
-    this.pid = await getSequenceNextValuePost("pid");
+    this.pid = await getSequenceNextValue('pid')
   }
-  next();
-});
-export default mongoose.model<PostDocument>("Post", postSchema);
+  next()
+})
+export default mongoose.model<PostDocument>('Post', postSchema)

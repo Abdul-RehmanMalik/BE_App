@@ -144,8 +144,10 @@ components:
                     type: string
                     description: postedBy
                     example: ""
-                image:
-                    type: string
+                images:
+                    items:
+                        type: string
+                    type: array
                     description: Image
                     example: ""
             required:
@@ -154,6 +156,11 @@ components:
                 - postedBy
             type: object
             additionalProperties: false
+        FlattenMaps_T_:
+            properties: {}
+            type: object
+        PostDocument:
+            $ref: '#/components/schemas/FlattenMaps_T_'
     securitySchemes:
         bearerAuth:
             type: http
@@ -390,7 +397,7 @@ paths:
                     schema:
                         type: string
                     example: johnSnow01
-    /user/searchuser:
+    /user/search:
         post:
             operationId: SearchUser
             responses:
@@ -414,6 +421,31 @@ paths:
                                     type: string
                             required:
                                 - query
+                            type: object
+    /user/updateprofilepic:
+        put:
+            operationId: UpdateProfilePic
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+            tags:
+                - User
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                id:
+                                    type: string
+                            required:
+                                - id
                             type: object
     /session:
         get:
@@ -517,6 +549,22 @@ paths:
                                 - userId
                                 - pid
                             type: object
+    /posts/getall:
+        get:
+            operationId: GetAllPosts
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: '#/components/schemas/PostDocument'
+                                type: array
+            tags:
+                - Post
+            security: []
+            parameters: []
 servers:
     -
         url: /
