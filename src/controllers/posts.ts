@@ -2,10 +2,6 @@ import { PostPayload } from '../models/Posts'
 import { Get, Route, Put, Tags, Post, Body, Request } from 'tsoa'
 import Posts, { PostDocument } from '../models/Posts'
 import cloudinary from '../util/cloudinaryConfig'
-import User from '../models/User'
-import fs from 'fs'
-import multer from 'multer'
-import { UserRequest } from '../types/UserRequest'
 @Route('/posts')
 @Tags('Post')
 export class PostController {
@@ -34,7 +30,11 @@ export class PostController {
         description,
         images: imageUrls,
         date: new Date(),
-        postedBy,
+        postedBy: {
+          userId: postedBy.userId,
+          username: postedBy.username,
+          profilePicture: postedBy.profilePicture,
+        },
       })
 
       await newPost.save()
@@ -52,6 +52,7 @@ export class PostController {
   ): Promise<PostResponse> {
     try {
       const { pid, userId } = body
+      console.log('Body:', body)
       const post = await Posts.findOne({ pid })
       if (!post) {
         throw {

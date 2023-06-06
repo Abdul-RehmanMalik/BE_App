@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose'
 import { getSequenceNextValue } from '../util/getSequenceNextValue'
+
 export interface PostPayload {
   /**
    * title of post
@@ -13,22 +14,30 @@ export interface PostPayload {
   description: string
   /**
    * postedBy
-   * @example ""
    */
-  postedBy: string
+  postedBy: {
+    userId: string
+    username: string
+    profilePicture: string
+  }
   /**
    * Image
    * @example ""
    */
   images?: string[]
 }
+
 export interface PostDocument extends Document {
   pid: number
   title: string
   description: string
   images?: string[]
   date: Date
-  postedBy: string
+  postedBy: {
+    userId: string
+    username: string
+    profilePicture: string
+  }
   likes: number[]
   comments: string[]
 }
@@ -52,7 +61,18 @@ const postSchema = new Schema<PostDocument>({
     default: Date.now,
   },
   postedBy: {
-    type: String,
+    userId: {
+      type: String,
+      required: true,
+    },
+    username: {
+      type: String,
+      required: true,
+    },
+    profilePicture: {
+      type: String,
+      required: true,
+    },
   },
   likes: [{ type: Number }],
   comments: [

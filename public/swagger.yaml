@@ -96,10 +96,13 @@ components:
                     type: string
                 isActivated:
                     type: boolean
+                profilePicture:
+                    type: string
             required:
                 - id
                 - name
                 - isActivated
+                - profilePicture
             type: object
             additionalProperties: false
         PostResponse:
@@ -141,9 +144,19 @@ components:
                     description: 'description of post'
                     example: ""
                 postedBy:
-                    type: string
+                    properties:
+                        profilePicture:
+                            type: string
+                        username:
+                            type: string
+                        userId:
+                            type: string
+                    required:
+                        - profilePicture
+                        - username
+                        - userId
+                    type: object
                     description: postedBy
-                    example: ""
                 images:
                     items:
                         type: string

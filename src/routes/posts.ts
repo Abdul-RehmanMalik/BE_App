@@ -9,7 +9,8 @@ postRouter.post('/createpost', upload.array('images'), async (req, res) => {
   // if (error) return res.status(400).send(error.details[0].message);
   try {
     console.log('in try')
-    console.log('Req Body Route:', req.files) // Use req.files to access the array of uploaded files
+    console.log('Req Files Route:', req.files)
+    console.log('Req Body Route: ', req.body)
     const response = await postController.createPost(req, req.body) // Pass req.files as the first argument
     res.send(response)
   } catch (err: any) {
@@ -19,11 +20,12 @@ postRouter.post('/createpost', upload.array('images'), async (req, res) => {
 })
 postRouter.put('/like', async (req, res) => {
   try {
-    console.log('in try')
+    console.log('in like route try')
+    console.log('req.body', req.body)
     const response = await postController.likePost(req.body)
     res.send(response)
   } catch (err: any) {
-    console.log('in catch')
+    console.log('in like route catch')
     res.status(err.code).send(err.message)
   }
 })
