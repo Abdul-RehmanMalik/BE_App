@@ -39,7 +39,15 @@ export interface PostDocument extends Document {
     profilePicture: string
   }
   likes: number[]
-  comments: string[]
+  comments: Array<{
+    cid: number
+    commentedBy: {
+      userId: number
+      profilePicture: string
+      username: string
+    }
+    text: string
+  }>
 }
 
 const postSchema = new Schema<PostDocument>({
@@ -69,23 +77,27 @@ const postSchema = new Schema<PostDocument>({
       type: String,
       required: true,
     },
-    profilePicture: {
-      type: String,
-      required: true,
-    },
+    profilePicture: String,
   },
   likes: [{ type: Number }],
   comments: [
     {
+      cid: Number,
+      commentedBy: {
+        userId: Number,
+        profilePicture: String,
+        username: String,
+      },
       text: String,
-      postedBy: String,
     },
   ],
 })
+
 postSchema.pre('save', async function (next) {
   if (this.isNew) {
     this.pid = await getSequenceNextValue('pid')
   }
   next()
 })
+
 export default mongoose.model<PostDocument>('Post', postSchema)

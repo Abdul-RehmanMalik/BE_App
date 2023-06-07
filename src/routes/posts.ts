@@ -49,4 +49,50 @@ postRouter.get('/getall', async (req, res) => {
     res.status(err.code).send(err.message)
   }
 })
+postRouter.post('/addComment', async (req, res) => {
+  // const { error, value: body } = postValidation(req.body);
+  // if (error) return res.status(400).send(error.details[0].message);
+  try {
+    console.log('in try')
+    console.log('Req Body Route: ', req.body)
+    const response = await postController.addComment(req.body) // Pass req.files as the first argument
+    res.send(response)
+  } catch (err: any) {
+    console.log('in catch')
+    res.status(err.code).send(err.message)
+  }
+})
+postRouter.get('/getcomments', async (req, res) => {
+  try {
+    console.log('in try')
+    const postId = Number(req.query.postId)
+    const response = await postController.getComments(postId)
+    res.send(response)
+  } catch (err: any) {
+    console.log('in catch')
+    res.status(err.code).send(err.message)
+  }
+})
+postRouter.delete('/deletecomment/:cid', async (req, res) => {
+  try {
+    console.log('in try')
+    const cid = Number(req.params.cid)
+    const response = await postController.deleteComment(cid)
+    res.send(response)
+  } catch (err: any) {
+    console.log('in catch')
+    res.status(err.code).send(err.message)
+  }
+})
+postRouter.put('/editcomment/:cid', async (req, res) => {
+  try {
+    console.log('in try edit comment')
+    const cid = Number(req.params.cid)
+    const response = await postController.editComment(cid, req.body)
+    res.send(response)
+  } catch (err: any) {
+    console.log('in catch edit comment')
+    res.status(err.code).send(err.message)
+  }
+})
 export default postRouter
