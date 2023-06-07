@@ -50,8 +50,6 @@ postRouter.get('/getall', async (req, res) => {
   }
 })
 postRouter.post('/addComment', async (req, res) => {
-  // const { error, value: body } = postValidation(req.body);
-  // if (error) return res.status(400).send(error.details[0].message);
   try {
     console.log('in try')
     console.log('Req Body Route: ', req.body)
