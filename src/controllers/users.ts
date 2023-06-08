@@ -14,7 +14,6 @@ import {
 } from 'tsoa'
 import cloudinary from '../util/cloudinaryConfig'
 import { UserDetailsResponse } from './auth'
-import fs from 'fs'
 
 @Route('/user')
 @Tags('User')
@@ -57,13 +56,13 @@ export class UserController {
     @Body() body: { query: string }
   ): Promise<UserSearchResponse> {
     const { query } = body
-    console.log('Query:', query)
-    if (!query) {
-      throw {
-        code: 401, //401 Unauthorized is the status code to return when the client provides no credentials or invalid credentials.
-        message: 'Invalid Query',
-      }
-    }
+    // console.log('Query:', query)
+    // if (!query) {
+    //   throw {
+    //     code: 400,
+    //     message: 'Invalid Query',
+    //   }
+    // }
     const users = await User.find({
       $or: [
         { name: { $regex: query, $options: 'i' } },
@@ -111,7 +110,10 @@ export class UserController {
 
       return 'Profile Picture Updated Successfully'
     } catch (error: any) {
-      throw error
+      throw {
+        code: 500,
+        message: error.message,
+      }
     }
   }
 }

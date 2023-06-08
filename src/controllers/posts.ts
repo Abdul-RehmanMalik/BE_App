@@ -118,6 +118,20 @@ export class PostController {
       throw error
     }
   }
+  @Get('/getuserposts')
+  public async findPostsByUserId(
+    @Query('userId') userId: number
+  ): Promise<PostDocument[]> {
+    try {
+      const posts: PostDocument[] = await Posts.find({
+        'postedBy.userId': userId,
+      }).exec()
+      console.log(posts)
+      return posts
+    } catch (error) {
+      throw error
+    }
+  }
   @Post('/addComment')
   public async addComment(
     @Body()
@@ -246,34 +260,52 @@ export class PostController {
 
 interface PostResponse {
   /**
-   * Post Response
-   * @example "title: abc, description: some description of a post"
+   * Post ID
+   * @example 1
    */
   pid: number
+  /**
+   * Post title
+   * @example "Title of the post"
+   */
   title: string
+  /**
+   * Post description
+   * @example "Description of the post"
+   */
   description: string
+  /**
+   * Array of user IDs who liked the post
+   * @example [1, 2, 3]
+   */
   likes: number[]
-  comments: Array<{
-    cid: number
-    commentedBy: {
-      userId: number
-      profilePicture: string
-      username: string
-    }
-    text: string
-  }>
+  /**
+   * Array of comments on the post
+   */
+  comments: CommentResponse[]
 }
 interface CommentResponse {
-  comments: Array<{
-    cid: number
-    commentedBy: {
-      userId: number
-      profilePicture: string
-      username: string
-    }
-    text: string
-  }>
+  /**
+   * Comment ID
+   * @example 1
+   */
+  cid: number
+  /**
+   * User who made the comment
+   * @example { userId: "user1", profilePicture: "https://example.com/user1.jpg", username: "user1" }
+   */
+  commentedBy: {
+    userId: string
+    profilePicture: string
+    username: string
+  }
+  /**
+   * Comment text
+   * @example "This is a comment"
+   */
+  text: string
 }
+
 interface FileUpload {
   fieldname: string
   originalname: string

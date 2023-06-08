@@ -1,17 +1,19 @@
 import express from 'express'
 import { PostController } from '../controllers/posts'
 import { upload } from '../middleware/multermiddleware'
+import { postValidation } from '../util/validation'
+
 const postRouter = express.Router()
 const postController = new PostController()
 
 postRouter.post('/createpost', upload.array('images'), async (req, res) => {
-  // const { error, value: body } = postValidation(req.body);
-  // if (error) return res.status(400).send(error.details[0].message);
+  // const { error, value: body } = postValidation(req.body)
+  // if (error) return res.status(400).send(error.details[0].message)
   try {
     console.log('in try')
     console.log('Req Files Route:', req.files)
     console.log('Req Body Route: ', req.body)
-    const response = await postController.createPost(req, req.body) // Pass req.files as the first argument
+    const response = await postController.createPost(req, req.body)
     res.send(response)
   } catch (err: any) {
     console.log('in catch')
@@ -90,6 +92,17 @@ postRouter.put('/editcomment/:cid', async (req, res) => {
     res.send(response)
   } catch (err: any) {
     console.log('in catch edit comment')
+    res.status(err.code).send(err.message)
+  }
+})
+postRouter.get('/getuserposts', async (req, res) => {
+  try {
+    console.log('in  get user posts try')
+    const userId = Number(req.query.userId)
+    const response = await postController.findPostsByUserId(userId)
+    res.send(response)
+  } catch (err: any) {
+    console.log('in catch')
     res.status(err.code).send(err.message)
   }
 })
