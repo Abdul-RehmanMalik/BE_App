@@ -105,6 +105,148 @@ components:
                 - profilePicture
             type: object
             additionalProperties: false
+        mongoose.Types.ObjectId:
+            type: string
+        CommentResponse:
+            properties:
+                cid:
+                    type: number
+                    format: double
+                    description: 'Comment ID'
+                    example: 1
+                commentedBy:
+                    $ref: '#/components/schemas/mongoose.Types.ObjectId'
+                    description: 'User who made the comment'
+                text:
+                    type: string
+                    description: 'Comment text'
+                    example: 'This is a comment'
+            required:
+                - cid
+                - commentedBy
+                - text
+            type: object
+            additionalProperties: false
+        PostResponse:
+            properties:
+                pid:
+                    type: number
+                    format: double
+                    description: 'Post ID'
+                    example: 1
+                title:
+                    type: string
+                    description: 'Post title'
+                    example: 'Title of the post'
+                description:
+                    type: string
+                    description: 'Post description'
+                    example: 'Description of the post'
+                likes:
+                    items:
+                        type: number
+                        format: double
+                    type: array
+                    description: 'Array of user IDs who liked the post'
+                    example:
+                        - 1
+                        - 2
+                        - 3
+                comments:
+                    items:
+                        $ref: '#/components/schemas/CommentResponse'
+                    type: array
+                    description: 'Array of comments on the post'
+                postedBy:
+                    $ref: '#/components/schemas/mongoose.Types.ObjectId'
+            required:
+                - pid
+                - title
+                - description
+                - likes
+                - comments
+                - postedBy
+            type: object
+            additionalProperties: false
+        PostComment:
+            properties:
+                cid:
+                    type: number
+                    format: double
+                commentedBy:
+                    $ref: '#/components/schemas/mongoose.Types.ObjectId'
+                text:
+                    type: string
+            required:
+                - cid
+                - commentedBy
+                - text
+            type: object
+            additionalProperties: false
+        PostPayload:
+            properties:
+                title:
+                    type: string
+                    description: 'title of post'
+                    example: ""
+                description:
+                    type: string
+                    description: 'description of post'
+                    example: ""
+                postedBy:
+                    $ref: '#/components/schemas/mongoose.Types.ObjectId'
+                    description: postedBy
+                images:
+                    items:
+                        type: string
+                    type: array
+                    description: Image
+                    example: ""
+                comments:
+                    items:
+                        $ref: '#/components/schemas/PostComment'
+                    type: array
+            required:
+                - title
+                - description
+                - postedBy
+            type: object
+            additionalProperties: false
+        getPostResponse:
+            properties:
+                pid:
+                    type: number
+                    format: double
+                title:
+                    type: string
+                description:
+                    type: string
+                user:
+                    properties:
+                        profilePic:
+                            type: string
+                        name:
+                            type: string
+                        userId:
+                            type: number
+                            format: double
+                    required:
+                        - profilePic
+                        - name
+                        - userId
+                    type: object
+            required:
+                - pid
+                - title
+                - description
+                - user
+            type: object
+            additionalProperties: false
+        FlattenMaps_T_:
+            properties: {}
+            type: object
+        PostDocument:
+            $ref: '#/components/schemas/FlattenMaps_T_'
     securitySchemes:
         bearerAuth:
             type: http
@@ -411,6 +553,235 @@ paths:
                 -
                     bearerAuth: []
             parameters: []
+    /posts/createpost:
+        post:
+            operationId: CreatePost
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - {$ref: '#/components/schemas/PostResponse'}
+                                    - {type: string}
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PostPayload'
+    /posts/like:
+        put:
+            operationId: LikePost
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - {$ref: '#/components/schemas/PostResponse'}
+                                    - {type: string}
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                userId:
+                                    type: number
+                                    format: double
+                                pid:
+                                    type: number
+                                    format: double
+                            required:
+                                - userId
+                                - pid
+                            type: object
+    /posts/unlike:
+        put:
+            operationId: UnlikePost
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - {$ref: '#/components/schemas/PostResponse'}
+                                    - {type: string}
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                userId:
+                                    type: number
+                                    format: double
+                                pid:
+                                    type: number
+                                    format: double
+                            required:
+                                - userId
+                                - pid
+                            type: object
+    /posts/getall:
+        get:
+            operationId: GetAllPosts
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: '#/components/schemas/getPostResponse'
+                                type: array
+            tags:
+                - Post
+            security: []
+            parameters: []
+    /posts/getuserposts:
+        get:
+            operationId: FindPostsByUserId
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: '#/components/schemas/PostDocument'
+                                type: array
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: query
+                    name: userId
+                    required: true
+                    schema:
+                        format: double
+                        type: number
+    /posts/addComment:
+        post:
+            operationId: AddComment
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CommentResponse'
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                commentedBy:
+                                    $ref: '#/components/schemas/mongoose.Types.ObjectId'
+                                text:
+                                    type: string
+                                pid:
+                                    type: number
+                                    format: double
+                            required:
+                                - commentedBy
+                                - text
+                                - pid
+                            type: object
+    /posts/getcomments:
+        get:
+            operationId: GetComments
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: '#/components/schemas/CommentResponse'
+                                type: array
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: query
+                    name: postId
+                    required: true
+                    schema:
+                        format: double
+                        type: number
+    '/posts/deletecomment/{cid}':
+        delete:
+            operationId: DeleteComment
+            responses:
+                '204':
+                    description: 'No content'
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: path
+                    name: cid
+                    required: true
+                    schema:
+                        format: double
+                        type: number
+    '/posts/editcomment/{cid}':
+        put:
+            operationId: EditComment
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CommentResponse'
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: path
+                    name: cid
+                    required: true
+                    schema:
+                        format: double
+                        type: number
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                text:
+                                    type: string
+                            required:
+                                - text
+                            type: object
 servers:
     -
         url: /

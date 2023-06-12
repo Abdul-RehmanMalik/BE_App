@@ -11,7 +11,7 @@ postRouter.post('/createpost', upload.array('images'), async (req, res) => {
   // if (error) return res.status(400).send(error.details[0].message)
   try {
     console.log('in try')
-    console.log('Req Files Route:', req.files)
+    console.log('Req Files Route:', req)
     console.log('Req Body Route: ', req.body)
     const response = await postController.createPost(req, req.body)
     res.send(response)

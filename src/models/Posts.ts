@@ -1,7 +1,5 @@
 import mongoose, { Document, Schema } from 'mongoose'
 import { getSequenceNextValue } from '../util/getSequenceNextValue'
-import Comments from './Comments'
-
 export interface PostPayload {
   /**
    * title of post
@@ -16,24 +14,41 @@ export interface PostPayload {
   /**
    * postedBy
    */
-  postedBy: Schema.Types.ObjectId
+  postedBy: mongoose.Types.ObjectId
   /**
    * Image
    * @example ""
    */
   images?: string[]
-  comments: Comment[]
+  comments?: PostComment[]
 }
-
+export interface PostComment {
+  cid: number
+  commentedBy: mongoose.Types.ObjectId
+  text: string
+}
+export interface PostCommentDocument extends Document, PostComment {}
+const commentSchema = new Schema<PostCommentDocument>({
+  cid: {
+    type: Number,
+    required: true,
+  },
+  commentedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  text: String,
+})
 export interface PostDocument extends Document {
   pid: number
   title: string
   description: string
   images?: string[]
   date: Date
-  postedBy: Schema.Types.ObjectId
+  postedBy: mongoose.Types.ObjectId
   likes: number[]
-  comments: Comment[]
+  comments: PostComment[]
 }
 
 const postSchema = new Schema<PostDocument>({
@@ -60,7 +75,7 @@ const postSchema = new Schema<PostDocument>({
     required: true,
   },
   likes: [{ type: Number }],
-  comments: [Comments],
+  comments: [commentSchema],
 })
 
 postSchema.pre('save', async function (next) {
