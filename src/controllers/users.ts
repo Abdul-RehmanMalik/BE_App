@@ -14,7 +14,7 @@ import {
 } from 'tsoa'
 import cloudinary from '../util/cloudinaryConfig'
 import { UserDetailsResponse } from './auth'
-
+import { Readable } from 'stream'
 @Route('/user')
 @Tags('User')
 export class UserController {
@@ -56,13 +56,6 @@ export class UserController {
     @Body() body: { query: string }
   ): Promise<UserSearchResponse> {
     const { query } = body
-    // console.log('Query:', query)
-    // if (!query) {
-    //   throw {
-    //     code: 400,
-    //     message: 'Invalid Query',
-    //   }
-    // }
     const users = await User.find({
       $or: [
         { name: { $regex: query, $options: 'i' } },
@@ -78,10 +71,11 @@ export class UserController {
     }
     return { users }
   }
+
   @Put('/updateprofilepic')
   public async updateProfilePic(
     @Request() req: Express.Request,
-    @Body() body: { id: string }
+    @Body() body: { id: number }
   ): Promise<string> {
     try {
       const { id } = body
@@ -93,16 +87,30 @@ export class UserController {
         }
       }
 
-      const profilePicture = req.file
+      const profilePicture = req.file as Express.Multer.File
       console.log('Profile Pic:', profilePicture)
       let imageUrl: string | null = null
 
       if (profilePicture) {
-        const result = await cloudinary.uploader.upload(profilePicture.path, {
-          folder: 'ProfilePics',
-        })
+        imageUrl = await new Promise<string>((resolve, reject) => {
+          const cld_upload_stream = cloudinary.uploader.upload_stream(
+            { folder: 'ProfilePics' },
+            (error: any, result: any) => {
+              if (result && result.secure_url) {
+                resolve(result.secure_url)
+              } else {
+                reject(error)
+              }
+            }
+          )
+          const fileStream = new Readable()
+          fileStream.push(profilePicture.buffer)
+          fileStream.push(null)
 
-        imageUrl = result.secure_url
+          fileStream.pipe(cld_upload_stream)
+        }).catch((error) => {
+          throw error
+        })
       }
 
       await User.findOneAndUpdate({ id }, { profilePicture: imageUrl })

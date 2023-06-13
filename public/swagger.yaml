@@ -221,32 +221,34 @@ components:
                     type: string
                 description:
                     type: string
-                user:
+                images:
+                    items:
+                        type: string
+                    type: array
+                postedBy:
                     properties:
-                        profilePic:
+                        profilePicture:
                             type: string
                         name:
                             type: string
-                        userId:
+                        id:
                             type: number
                             format: double
+                        _id:
+                            type: string
                     required:
-                        - profilePic
+                        - profilePicture
                         - name
-                        - userId
+                        - id
+                        - _id
                     type: object
             required:
                 - pid
                 - title
                 - description
-                - user
+                - postedBy
             type: object
             additionalProperties: false
-        FlattenMaps_T_:
-            properties: {}
-            type: object
-        PostDocument:
-            $ref: '#/components/schemas/FlattenMaps_T_'
     securitySchemes:
         bearerAuth:
             type: http
@@ -665,7 +667,7 @@ paths:
                         application/json:
                             schema:
                                 items:
-                                    $ref: '#/components/schemas/PostDocument'
+                                    $ref: '#/components/schemas/getPostResponse'
                                 type: array
             tags:
                 - Post

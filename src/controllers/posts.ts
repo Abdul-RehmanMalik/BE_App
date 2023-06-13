@@ -96,8 +96,15 @@ export class PostController {
           message: 'Post not found.',
         }
       }
-      if (!post.likes.includes(userId)) {
-        post.likes.push(userId)
+      const user = await User.findOne({ id: userId })
+      if (!user) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'User not found.',
+        }
+      }
+      if (!post.likes.includes(user._id)) {
+        post.likes.push(user._id)
         await post.save()
       }
       return 'Post Liked'
@@ -118,7 +125,14 @@ export class PostController {
           message: 'Post not found.',
         }
       }
-      const index = post.likes.indexOf(userId)
+      const user = await User.findOne({ id: userId })
+      if (!user) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'User not found.',
+        }
+      }
+      const index = post.likes.indexOf(user._id)
       if (index !== -1) {
         post.likes.splice(index, 1)
       }
@@ -141,33 +155,58 @@ export class PostController {
   //     throw error
   //   }
   // }
+  // @Get('/getall')
+  // public async getAllPosts(
+  //   @Request() req: Express.Request
+  // ): Promise<getPostResponse[]> {
+  //   try {
+  //     const posts: PostDocument[] = await Posts.find().exec()
+  //     const postResponses: getPostResponse[] = []
+
+  //     for (const post of posts) {
+  //       const user = await User.findById(post.postedBy).exec()
+
+  //       if (user) {
+  //         const postResponse: getPostResponse = {
+  //           pid: post.pid,
+  //           title: post.title,
+  //           description: post.description,
+  //           images: post.images,
+  //           user: {
+  //             userId: user.id,
+  //             name: user.name,
+  //             profilePicture: user.profilePicture,
+  //           },
+  //         }
+
+  //         postResponses.push(postResponse)
+  //       }
+  //     }
+
+  //     console.log(postResponses)
+  //     return postResponses
+  //   } catch (error) {
+  //     throw error
+  //   }
+  // }
   @Get('/getall')
   public async getAllPosts(
     @Request() req: Express.Request
   ): Promise<getPostResponse[]> {
     try {
-      const posts: PostDocument[] = await Posts.find().exec()
-      const postResponses: getPostResponse[] = []
-
-      for (const post of posts) {
-        const user = await User.findById(post.postedBy).exec()
-
-        if (user) {
-          const postResponse: getPostResponse = {
-            pid: post.pid,
-            title: post.title,
-            description: post.description,
-            images: post.images,
-            user: {
-              userId: user.id,
-              name: user.name,
-              profilePicture: user.profilePicture,
-            },
-          }
-
-          postResponses.push(postResponse)
-        }
-      }
+      const postResponses: getPostResponse[] = await Posts.find()
+        .select({
+          _id: 0,
+          pid: 1,
+          title: 1,
+          description: 1,
+          images: 1,
+          postedBy: 1,
+        })
+        .populate({
+          path: 'postedBy',
+          select: 'id name profilePicture',
+        })
 
       console.log(postResponses)
       return postResponses
@@ -178,14 +217,37 @@ export class PostController {
   @Get('/getuserposts')
   public async findPostsByUserId(
     @Query('userId') userId: number
-  ): Promise<PostDocument[]> {
+  ): Promise<getPostResponse[]> {
     try {
-      const posts: PostDocument[] = await Posts.find({
-        'postedBy.userId': userId,
-      }).exec()
-      console.log(posts)
+      const user = await User.findOne({ id: userId })
+      if (!user) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'User not found.',
+        }
+      }
+      // console.log('user:', user)
+      const posts: getPostResponse[] = await Posts.find({
+        postedBy: user._id,
+      })
+        .select({
+          _id: 0,
+          pid: 1,
+          title: 1,
+          description: 1,
+          images: 1,
+          postedBy: 1,
+        })
+        .populate({
+          path: 'postedBy',
+          select: 'id name profilePicture',
+        })
+
+      console.log('posts')
       return posts
     } catch (error) {
+      console.log('error:', error)
+
       throw error
     }
   }
@@ -231,9 +293,16 @@ export class PostController {
   @Get('/getcomments')
   public async getComments(
     @Query('postId') postId: number
-  ): Promise<CommentResponse[]> {
+  ): Promise<getCommentResponse[]> {
     try {
-      const post: PostDocument | null = await Posts.findOne({ pid: postId })
+      const post: getCommentResponse[] | null = await Posts.findOne({
+        pid: postId,
+      })
+        .select({ _id: 0, comments: 1 })
+        .populate({
+          path: 'comments.commentedBy',
+          select: 'id name profilePicture',
+        })
 
       if (!post) {
         throw {
@@ -241,14 +310,7 @@ export class PostController {
           message: 'Post not found.',
         }
       }
-
-      const comments: CommentResponse[] = post.comments.map((comment) => ({
-        cid: comment.cid,
-        commentedBy: comment.commentedBy,
-        text: comment.text,
-      }))
-
-      return comments
+      return post
     } catch (error) {
       console.error('Error fetching comments:', error)
       throw error
@@ -378,20 +440,19 @@ interface getPostResponse {
   description: string
   images?: string[]
 
-  user: {
-    userId: number
+  postedBy: {
+    _id: string
+    id: number
     name: string
     profilePicture: string
   }
 }
-
-interface FileUpload {
-  fieldname: string
-  originalname: string
-  encoding: string
-  mimetype: string
-  destination: string
-  filename: string
-  path: string
-  size: number
+interface getCommentResponse {
+  cid: number
+  commentedBy: {
+    id: number
+    name: string
+    profilePicture: string
+  }
+  text: string
 }

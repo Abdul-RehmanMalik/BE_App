@@ -47,7 +47,7 @@ export interface PostDocument extends Document {
   images?: string[]
   date: Date
   postedBy: mongoose.Types.ObjectId
-  likes: number[]
+  likes: mongoose.Types.ObjectId[]
   comments: PostComment[]
 }
 
@@ -74,7 +74,12 @@ const postSchema = new Schema<PostDocument>({
     ref: 'User',
     required: true,
   },
-  likes: [{ type: Number }],
+  likes: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+    },
+  ],
   comments: [commentSchema],
 })
 

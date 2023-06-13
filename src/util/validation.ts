@@ -5,18 +5,48 @@ const passwordSchema = Joi.string().min(6).max(20)
 const addressSchema = Joi.string()
 const tokenSchema = Joi.string()
 const idSchema = Joi.number()
-const titleSchema = Joi.string()
-const descriptionSchema = Joi.string()
-
+const titleSchema = Joi.string().min(3)
+const descriptionSchema = Joi.string().min(6)
+const postedBySchema = Joi.string()
+const pidSchema = Joi.number()
+const userIdSchema = Joi.number()
+const cidSchema = Joi.number()
+const searchquerySchema = Joi.string()
 export const loginValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     email: emailSchema.required(),
     password: passwordSchema.required(),
   }).validate(data)
-export const postValidation = (data: any): Joi.ValidationResult =>
+export const updateprofilepicvalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    id: idSchema.required(),
+  }).validate(data)
+export const createpostValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     title: titleSchema.required(),
     description: descriptionSchema.required(),
+    postedBy: postedBySchema.required(),
+  }).validate(data)
+export const searchuservalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    query: searchquerySchema.required(),
+  }).validate(data)
+export const likeunlikepostvalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    pid: pidSchema.required(),
+    userId: userIdSchema.required(),
+  }).validate(data)
+export const getuserpostvalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    userId: userIdSchema.required(),
+  }).validate(data)
+export const getcommentvalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    postId: pidSchema.required(),
+  }).validate(data)
+export const deleteeditcommentvalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    cid: cidSchema.required(),
   }).validate(data)
 export const resetPasswordValidation = (data: any): Joi.ValidationResult =>
   Joi.object({

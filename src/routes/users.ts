@@ -1,5 +1,9 @@
 import express from 'express'
-import { getUserValidation } from '../util/validation'
+import {
+  getUserValidation,
+  searchuservalidation,
+  updateprofilepicvalidation,
+} from '../util/validation'
 import { UserController } from '../controllers/users'
 import { upload } from '../middleware/multermiddleware'
 
@@ -21,9 +25,11 @@ userRouter.get('/:username', async (req, res) => {
 //search user
 userRouter.post('/search', async (req, res) => {
   try {
+    const { error, value: body } = searchuservalidation(req.body)
+    if (error) return res.status(400).send(error.details[0].message)
     console.log('in route')
     console.log('body:', req.body)
-    const response = await userController.searchUser(req.body)
+    const response = await userController.searchUser(body)
     res.send(response)
   } catch (err: any) {
     console.log('In Catch')
@@ -35,9 +41,11 @@ userRouter.put(
   upload.single('profilePicture'),
   async (req, res) => {
     try {
+      const { error, value: body } = updateprofilepicvalidation(req.body)
+      if (error) return res.status(400).send(error.details[0].message)
       console.log('in try')
       console.log('Req Body Route:', req.body.image)
-      const response = await userController.updateProfilePic(req, req.body)
+      const response = await userController.updateProfilePic(req, body)
       res.send(response)
     } catch (err: any) {
       console.log('in catch')
