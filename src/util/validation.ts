@@ -12,6 +12,14 @@ const pidSchema = Joi.number()
 const userIdSchema = Joi.number()
 const cidSchema = Joi.number()
 const searchquerySchema = Joi.string()
+const locationSchema = Joi.string()
+const heritageSchema = Joi.string()
+const placesToVisitSchema = Joi.string()
+const communityAccessSchema = Joi.string()
+const easeOfTransportationSchema = Joi.string()
+const safetySchema = Joi.string()
+const costSchema = Joi.string()
+
 export const loginValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     email: emailSchema.required(),
@@ -26,6 +34,13 @@ export const createpostValidation = (data: any): Joi.ValidationResult =>
     title: titleSchema.required(),
     description: descriptionSchema.required(),
     postedBy: postedBySchema.required(),
+    location: locationSchema.required(),
+    easeOfTransportation: easeOfTransportationSchema,
+    safety: safetySchema,
+    cost: costSchema.required(),
+    heritage: heritageSchema,
+    placesToVisit: placesToVisitSchema,
+    communityAccess: communityAccessSchema,
   }).validate(data)
 export const searchuservalidation = (data: any): Joi.ValidationResult =>
   Joi.object({

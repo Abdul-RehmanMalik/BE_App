@@ -18,8 +18,8 @@ postRouter.post('/createpost', upload.array('images'), async (req, res) => {
   try {
     console.log('in try')
     console.log('Req Files Route:', req)
-    console.log('Req Body Route: ', body)
-    const response = await postController.createPost(req, body)
+    console.log('Req Body Route: ', req.body)
+    const response = await postController.createPost(req, req.body)
     res.send(response)
   } catch (err: any) {
     console.log('in catch')
@@ -36,18 +36,6 @@ postRouter.put('/like', async (req, res) => {
     res.send(response)
   } catch (err: any) {
     console.log('in like route catch')
-    res.status(err.code).send(err.message)
-  }
-})
-postRouter.put('/unlike', async (req, res) => {
-  try {
-    const { error, value: body } = likeunlikepostvalidation(req.body)
-    if (error) return res.status(400).send(error.details[0].message)
-    console.log('in try')
-    const response = await postController.unlikePost(body)
-    res.send(response)
-  } catch (err: any) {
-    console.log('in catch')
     res.status(err.code).send(err.message)
   }
 })

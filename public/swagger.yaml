@@ -206,10 +206,29 @@ components:
                     items:
                         $ref: '#/components/schemas/PostComment'
                     type: array
+                cost:
+                    type: number
+                    format: double
+                heritage:
+                    type: string
+                placesToVisit:
+                    items:
+                        type: string
+                    type: array
+                communityAccess:
+                    type: string
+                easeOfTransportation:
+                    type: string
+                safety:
+                    type: string
+                location:
+                    type: string
             required:
                 - title
                 - description
                 - postedBy
+                - cost
+                - location
             type: object
             additionalProperties: false
         getPostResponse:
@@ -247,6 +266,33 @@ components:
                 - title
                 - description
                 - postedBy
+            type: object
+            additionalProperties: false
+        getCommentResponse:
+            properties:
+                cid:
+                    type: number
+                    format: double
+                commentedBy:
+                    properties:
+                        profilePicture:
+                            type: string
+                        name:
+                            type: string
+                        id:
+                            type: number
+                            format: double
+                    required:
+                        - profilePicture
+                        - name
+                        - id
+                    type: object
+                text:
+                    type: string
+            required:
+                - cid
+                - commentedBy
+                - text
             type: object
             additionalProperties: false
     securitySchemes:
@@ -531,7 +577,8 @@ paths:
                         schema:
                             properties:
                                 id:
-                                    type: string
+                                    type: number
+                                    format: double
                             required:
                                 - id
                             type: object
@@ -700,15 +747,16 @@ paths:
                     application/json:
                         schema:
                             properties:
-                                commentedBy:
-                                    $ref: '#/components/schemas/mongoose.Types.ObjectId'
+                                userId:
+                                    type: number
+                                    format: double
                                 text:
                                     type: string
                                 pid:
                                     type: number
                                     format: double
                             required:
-                                - commentedBy
+                                - userId
                                 - text
                                 - pid
                             type: object
@@ -722,7 +770,7 @@ paths:
                         application/json:
                             schema:
                                 items:
-                                    $ref: '#/components/schemas/CommentResponse'
+                                    $ref: '#/components/schemas/getCommentResponse'
                                 type: array
             tags:
                 - Post

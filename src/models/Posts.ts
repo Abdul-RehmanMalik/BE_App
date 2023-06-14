@@ -21,6 +21,13 @@ export interface PostPayload {
    */
   images?: string[]
   comments?: PostComment[]
+  cost: number
+  heritage?: string
+  placesToVisit?: string[]
+  communityAccess?: string
+  easeOfTransportation?: string
+  safety?: string
+  location: string
 }
 export interface PostComment {
   cid: number
@@ -49,6 +56,13 @@ export interface PostDocument extends Document {
   postedBy: mongoose.Types.ObjectId
   likes: mongoose.Types.ObjectId[]
   comments: PostComment[]
+  cost: number
+  heritage?: string
+  placesToVisit?: string[]
+  communityAccess?: string
+  easeOfTransportation?: string
+  safety?: string
+  location: string
 }
 
 const postSchema = new Schema<PostDocument>({
@@ -81,6 +95,31 @@ const postSchema = new Schema<PostDocument>({
     },
   ],
   comments: [commentSchema],
+  cost: {
+    type: Number,
+    required: true,
+  },
+  heritage: {
+    type: String,
+  },
+  placesToVisit: [
+    {
+      type: String,
+    },
+  ],
+  communityAccess: {
+    type: String,
+  },
+  easeOfTransportation: {
+    type: String,
+  },
+  safety: {
+    type: String,
+  },
+  location: {
+    type: String,
+    required: true,
+  },
 })
 
 postSchema.pre('save', async function (next) {

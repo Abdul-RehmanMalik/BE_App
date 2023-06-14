@@ -28,7 +28,18 @@ export class PostController {
   ): Promise<PostResponse | string> {
     try {
       console.log('Body in controller:', body)
-      const { title, description, postedBy } = body
+      const {
+        title,
+        description,
+        postedBy,
+        location,
+        heritage,
+        placesToVisit,
+        communityAccess,
+        easeOfTransportation,
+        safety,
+        cost,
+      } = body
       const imageUrls: string[] = []
       const user = await User.findOne({ id: postedBy })
       if (!user) {
@@ -70,6 +81,13 @@ export class PostController {
         date: new Date(),
         postedBy: user._id,
         comments: [],
+        location,
+        heritage,
+        placesToVisit,
+        communityAccess,
+        easeOfTransportation,
+        safety,
+        cost,
       })
       console.log('New Post', newPost)
       await newPost.save()
@@ -81,7 +99,8 @@ export class PostController {
       throw error
     }
   }
-
+  //edit post
+  // delete post
   @Put('/like')
   public async likePost(
     @Body() body: { pid: number; userId: number }
@@ -105,90 +124,18 @@ export class PostController {
       }
       if (!post.likes.includes(user._id)) {
         post.likes.push(user._id)
-        await post.save()
-      }
-      return 'Post Liked'
-    } catch (error: any) {
-      throw error
-    }
-  }
-  @Put('/unlike')
-  public async unlikePost(
-    @Body() body: { pid: number; userId: number }
-  ): Promise<PostResponse | string> {
-    try {
-      const { pid, userId } = body
-      const post = await Posts.findOne({ pid })
-      if (!post) {
-        throw {
-          code: 404, // 404 means not found
-          message: 'Post not found.',
+      } else {
+        const index = post.likes.indexOf(user._id)
+        if (index !== -1) {
+          post.likes.splice(index, 1)
         }
-      }
-      const user = await User.findOne({ id: userId })
-      if (!user) {
-        throw {
-          code: 404, // 404 means not found
-          message: 'User not found.',
-        }
-      }
-      const index = post.likes.indexOf(user._id)
-      if (index !== -1) {
-        post.likes.splice(index, 1)
       }
       await post.save()
-
-      return 'Post Unliked'
+      return 'Post Liked/Unliked'
     } catch (error: any) {
       throw error
     }
   }
-  // @Get('/getall')
-  // public async getAllPosts(
-  //   @Request() req: Express.Request
-  // ): Promise<PostDocument[]> {
-  //   try {
-  //     const postArray: PostDocument[] = await Posts.find().exec()
-  //     console.log(postArray)
-  //     return postArray
-  //   } catch (error) {
-  //     throw error
-  //   }
-  // }
-  // @Get('/getall')
-  // public async getAllPosts(
-  //   @Request() req: Express.Request
-  // ): Promise<getPostResponse[]> {
-  //   try {
-  //     const posts: PostDocument[] = await Posts.find().exec()
-  //     const postResponses: getPostResponse[] = []
-
-  //     for (const post of posts) {
-  //       const user = await User.findById(post.postedBy).exec()
-
-  //       if (user) {
-  //         const postResponse: getPostResponse = {
-  //           pid: post.pid,
-  //           title: post.title,
-  //           description: post.description,
-  //           images: post.images,
-  //           user: {
-  //             userId: user.id,
-  //             name: user.name,
-  //             profilePicture: user.profilePicture,
-  //           },
-  //         }
-
-  //         postResponses.push(postResponse)
-  //       }
-  //     }
-
-  //     console.log(postResponses)
-  //     return postResponses
-  //   } catch (error) {
-  //     throw error
-  //   }
-  // }
   @Get('/getall')
   public async getAllPosts(
     @Request() req: Express.Request
@@ -257,15 +204,22 @@ export class PostController {
     body: {
       pid: number
       text: string
-      commentedBy: mongoose.Types.ObjectId
+      userId: number
     }
   ): Promise<CommentResponse> {
     try {
-      const { commentedBy, pid, text } = body
+      const { userId, pid, text } = body
       console.log('Body:', body)
+      const user = await User.findOne({ id: userId })
+      if (!user) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'User not found.',
+        }
+      }
       const comment = {
         cid: await getSequenceNextValue('cid'),
-        commentedBy: commentedBy,
+        commentedBy: user._id,
         text: text,
       }
       console.log('Comment:', comment)
@@ -287,6 +241,7 @@ export class PostController {
       }
       return commentResponse
     } catch (error: any) {
+      console.log('Error:', error)
       throw error
     }
   }
