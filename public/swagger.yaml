@@ -268,6 +268,32 @@ components:
                 - postedBy
             type: object
             additionalProperties: false
+        paginationResponse:
+            properties:
+                page:
+                    type: number
+                    format: double
+                limit:
+                    type: number
+                    format: double
+                totalPages:
+                    type: number
+                    format: double
+                totalPosts:
+                    type: number
+                    format: double
+                data:
+                    items:
+                        $ref: '#/components/schemas/getPostResponse'
+                    type: array
+            required:
+                - page
+                - limit
+                - totalPages
+                - totalPosts
+                - data
+            type: object
+            additionalProperties: false
         getCommentResponse:
             properties:
                 cid:
@@ -656,18 +682,18 @@ paths:
                                 - userId
                                 - pid
                             type: object
-    /posts/unlike:
-        put:
-            operationId: UnlikePost
+    /posts/search:
+        post:
+            operationId: Search
             responses:
                 '200':
                     description: Ok
                     content:
                         application/json:
                             schema:
-                                anyOf:
-                                    - {$ref: '#/components/schemas/PostResponse'}
-                                    - {type: string}
+                                items:
+                                    $ref: '#/components/schemas/getPostResponse'
+                                type: array
             tags:
                 - Post
             security: []
@@ -678,15 +704,10 @@ paths:
                     application/json:
                         schema:
                             properties:
-                                userId:
-                                    type: number
-                                    format: double
-                                pid:
-                                    type: number
-                                    format: double
+                                query:
+                                    type: string
                             required:
-                                - userId
-                                - pid
+                                - query
                             type: object
     /posts/getall:
         get:
@@ -697,9 +718,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                items:
-                                    $ref: '#/components/schemas/getPostResponse'
-                                type: array
+                                $ref: '#/components/schemas/paginationResponse'
             tags:
                 - Post
             security: []

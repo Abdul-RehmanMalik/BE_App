@@ -121,4 +121,15 @@ postRouter.get('/getuserposts', async (req, res) => {
     res.status(err.code).send(err.message)
   }
 })
+postRouter.post('/search', async (req, res) => {
+  try {
+    console.log('in route')
+    console.log('body:', req.body)
+    const response = await postController.search(req.body)
+    res.send(response)
+  } catch (err: any) {
+    console.log('In Catch')
+    res.status(err.code).send(err.message)
+  }
+})
 export default postRouter

@@ -17,6 +17,7 @@ import cloudinary from '../util/cloudinaryConfig'
 import { getSequenceNextValue } from '../util/getSequenceNextValue'
 import User from '../models/User'
 import { Readable } from 'stream'
+import { Request as ExpressRequest } from 'express'
 
 @Route('/posts')
 @Tags('Post')
@@ -136,11 +137,107 @@ export class PostController {
       throw error
     }
   }
+  //Please  ignore comments for now.
+  // @Post('/search')
+  // public async search(
+  //   @Body() body: { query: string }
+  // ): Promise<getPostResponse[]> {
+  //   const { query } = body
+  //   const posts: getPostResponse[] = await Posts.find({
+  //     $or: [
+  //       { title: { $regex: query, $options: 'i' } },
+  //       { description: { $regex: query, $options: 'i' } },
+  //       { location: { $regex: query, $options: 'i' } },
+  //     ],
+  //   })
+  //   if (posts.length === 0) {
+  //     throw {
+  //       code: 404, // 404 means not found
+  //       message: 'No Posts Found.',
+  //     }
+  //   }
+  //   return posts
+  // }
+  @Post('/search')
+  public async search(
+    @Body() body: { query: string }
+  ): Promise<getPostResponse[]> {
+    const { query } = body
+
+    const posts: getPostResponse[] = await Posts.aggregate([
+      {
+        $match: {
+          $or: [
+            { title: { $regex: query, $options: 'i' } },
+            { description: { $regex: query, $options: 'i' } },
+            { location: { $regex: query, $options: 'i' } },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          titleMatch: {
+            $cond: [
+              { $regexMatch: { input: '$title', regex: query, options: 'i' } },
+              1,
+              0,
+            ],
+          },
+        },
+      },
+      {
+        $sort: {
+          titleMatch: -1,
+        },
+      },
+    ])
+
+    if (posts.length === 0) {
+      throw {
+        code: 404, // 404 means not found
+        message: 'No Posts Found.',
+      }
+    }
+
+    return posts
+  }
+  //Please  ignore comments for now.
+  // @Get('/getall')
+  // public async getAllPosts(
+  //   @Request() req: Express.Request
+  // ): Promise<getPostResponse[]> {
+  //   try {
+  //     const postResponses: getPostResponse[] = await Posts.find()
+  //       .select({
+  //         _id: 0,
+  //         pid: 1,
+  //         title: 1,
+  //         description: 1,
+  //         images: 1,
+  //         postedBy: 1,
+  //       })
+  //       .populate({
+  //         path: 'postedBy',
+  //         select: 'id name profilePicture',
+  //       })
+
+  //     console.log(postResponses)
+  //     return postResponses
+  //   } catch (error) {
+  //     throw error
+  //   }
+  // }
   @Get('/getall')
   public async getAllPosts(
-    @Request() req: Express.Request
-  ): Promise<getPostResponse[]> {
+    @Request() req: ExpressRequest
+  ): Promise<paginationResponse> {
     try {
+      const page = parseInt(req.query.page as string) || 1
+      const limit = parseInt(req.query.limit as string) || 2 //limit of posts per page
+      const skip = (page - 1) * limit
+
+      const totalPosts = await Posts.countDocuments()
+
       const postResponses: getPostResponse[] = await Posts.find()
         .select({
           _id: 0,
@@ -154,10 +251,24 @@ export class PostController {
           path: 'postedBy',
           select: 'id name profilePicture',
         })
+        .skip(skip)
+        .limit(limit)
+        .lean()
 
-      console.log(postResponses)
-      return postResponses
+      const totalPages = Math.ceil(totalPosts / limit)
+
+      const response = {
+        page,
+        limit,
+        totalPages,
+        totalPosts,
+        data: postResponses,
+      }
+
+      console.log(response)
+      return response
     } catch (error) {
+      console.log('error:', error)
       throw error
     }
   }
@@ -401,6 +512,13 @@ interface getPostResponse {
     name: string
     profilePicture: string
   }
+}
+interface paginationResponse {
+  page: number
+  limit: number
+  totalPages: number
+  totalPosts: number
+  data: getPostResponse[]
 }
 interface getCommentResponse {
   cid: number
