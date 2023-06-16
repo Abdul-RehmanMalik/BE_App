@@ -18,6 +18,7 @@ import { getSequenceNextValue } from '../util/getSequenceNextValue'
 import User from '../models/User'
 import { Readable } from 'stream'
 import { Request as ExpressRequest } from 'express'
+import { UserDetailsResponse } from './auth'
 
 @Route('/posts')
 @Tags('Post')
@@ -72,7 +73,6 @@ export class PostController {
         })
       })
 
-      // await Promise.all(uploadPromises)
       const uploadedImageUrls = await Promise.all(uploadPromises)
       imageUrls.push(...uploadedImageUrls)
       const newPost = new Posts({
@@ -137,6 +137,28 @@ export class PostController {
       throw error
     }
   }
+  @Get('/likescount')
+  public async getLikesCount(@Query('pid') pid: number): Promise<number> {
+    try {
+      console.log('pid:', pid)
+      const post = await Posts.findOne({ pid })
+
+      if (!post) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Post not found.',
+        }
+      }
+
+      const likesCount = post.likes.length
+      console.log('likescount:', likesCount)
+      return likesCount
+    } catch (error: any) {
+      console.log('Error', error)
+      throw error
+    }
+  }
+
   //Please  ignore comments for now.
   // @Post('/search')
   // public async search(
@@ -163,31 +185,50 @@ export class PostController {
     @Body() body: { query: string }
   ): Promise<getPostResponse[]> {
     const { query } = body
-
     const posts: getPostResponse[] = await Posts.aggregate([
-      {
-        $match: {
-          $or: [
-            { title: { $regex: query, $options: 'i' } },
-            { description: { $regex: query, $options: 'i' } },
-            { location: { $regex: query, $options: 'i' } },
-          ],
-        },
-      },
       {
         $addFields: {
           titleMatch: {
             $cond: [
               { $regexMatch: { input: '$title', regex: query, options: 'i' } },
-              1,
+              8, //weight for title
+              0,
+            ],
+          },
+          descriptionMatch: {
+            $cond: [
+              {
+                $regexMatch: {
+                  input: '$description',
+                  regex: query,
+                  options: 'i',
+                },
+              },
+              5, //weight for description
+              0,
+            ],
+          },
+          locationMatch: {
+            $cond: [
+              {
+                $regexMatch: { input: '$location', regex: query, options: 'i' },
+              },
+              10, //weight for location
               0,
             ],
           },
         },
       },
       {
+        $addFields: {
+          totalWeight: {
+            $add: ['$titleMatch', '$descriptionMatch', '$locationMatch'],
+          },
+        },
+      },
+      {
         $sort: {
-          titleMatch: -1,
+          totalWeight: -1,
         },
       },
     ])
@@ -274,10 +315,16 @@ export class PostController {
   }
   @Get('/getuserposts')
   public async findPostsByUserId(
+    @Request() req: ExpressRequest,
     @Query('userId') userId: number
-  ): Promise<getPostResponse[]> {
+  ): Promise<paginationResponse> {
     try {
+      const page = parseInt(req.query.page as string) || 1
+      const limit = parseInt(req.query.limit as string) || 2 //limit of posts per page
+      const skip = (page - 1) * limit
       const user = await User.findOne({ id: userId })
+      const totalPosts = await Posts.countDocuments()
+
       if (!user) {
         throw {
           code: 404, // 404 means not found
@@ -300,9 +347,22 @@ export class PostController {
           path: 'postedBy',
           select: 'id name profilePicture',
         })
+        .skip(skip)
+        .limit(limit)
+        .lean()
 
-      console.log('posts')
-      return posts
+      const totalPages = Math.ceil(totalPosts / limit)
+
+      const response = {
+        page,
+        limit,
+        totalPages,
+        totalPosts,
+        data: posts,
+      }
+
+      console.log(response)
+      return response
     } catch (error) {
       console.log('error:', error)
 
@@ -512,6 +572,17 @@ interface getPostResponse {
     name: string
     profilePicture: string
   }
+}
+interface Like {
+  _id: string
+  id: number
+  name: string
+  profilePicture: string
+}
+
+interface LikesResponse {
+  count: number
+  data: Like[] | null
 }
 interface paginationResponse {
   page: number

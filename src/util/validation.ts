@@ -19,7 +19,8 @@ const communityAccessSchema = Joi.string()
 const easeOfTransportationSchema = Joi.string()
 const safetySchema = Joi.string()
 const costSchema = Joi.string()
-
+const pageSchema = Joi.number()
+const limitSchema = Joi.number()
 export const loginValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     email: emailSchema.required(),
@@ -51,9 +52,15 @@ export const likeunlikepostvalidation = (data: any): Joi.ValidationResult =>
     pid: pidSchema.required(),
     userId: userIdSchema.required(),
   }).validate(data)
+export const likescountvalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    pid: pidSchema.required(),
+  }).validate(data)
 export const getuserpostvalidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     userId: userIdSchema.required(),
+    page: pageSchema.required(),
+    limit: limitSchema.required(),
   }).validate(data)
 export const getcommentvalidation = (data: any): Joi.ValidationResult =>
   Joi.object({

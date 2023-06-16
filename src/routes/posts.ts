@@ -6,6 +6,7 @@ import {
   deleteeditcommentvalidation,
   getcommentvalidation,
   getuserpostvalidation,
+  likescountvalidation,
   likeunlikepostvalidation,
 } from '../util/validation'
 
@@ -115,7 +116,7 @@ postRouter.get('/getuserposts', async (req, res) => {
       value: { userId },
     } = getuserpostvalidation(req.query)
     if (error) return res.status(400).send(error.details[0].message)
-    const response = await postController.findPostsByUserId(userId)
+    const response = await postController.findPostsByUserId(req, userId)
     res.send(response)
   } catch (err: any) {
     res.status(err.code).send(err.message)
@@ -129,6 +130,19 @@ postRouter.post('/search', async (req, res) => {
     res.send(response)
   } catch (err: any) {
     console.log('In Catch')
+    res.status(err.code).send(err.message)
+  }
+})
+postRouter.get('/likescount', async (req, res) => {
+  try {
+    const {
+      error,
+      value: { pid },
+    } = likescountvalidation(req.query)
+    if (error) return res.status(400).send(error.details[0].message)
+    const response = await postController.getLikesCount(pid)
+    res.send(response)
+  } catch (err: any) {
     res.status(err.code).send(err.message)
   }
 })
