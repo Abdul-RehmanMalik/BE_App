@@ -261,11 +261,18 @@ components:
                         - id
                         - _id
                     type: object
+                likes:
+                    items:
+                        $ref: '#/components/schemas/mongoose.Types.ObjectId'
+                    type: array
+                liked:
+                    type: boolean
             required:
                 - pid
                 - title
                 - description
                 - postedBy
+                - likes
             type: object
             additionalProperties: false
         paginationResponse:
@@ -650,60 +657,6 @@ paths:
                     application/json:
                         schema:
                             $ref: '#/components/schemas/PostPayload'
-    /posts/like:
-        put:
-            operationId: LikePost
-            responses:
-                '200':
-                    description: Ok
-                    content:
-                        application/json:
-                            schema:
-                                anyOf:
-                                    - {$ref: '#/components/schemas/PostResponse'}
-                                    - {type: string}
-            tags:
-                - Post
-            security: []
-            parameters: []
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            properties:
-                                userId:
-                                    type: number
-                                    format: double
-                                pid:
-                                    type: number
-                                    format: double
-                            required:
-                                - userId
-                                - pid
-                            type: object
-    /posts/likescount:
-        get:
-            operationId: GetLikesCount
-            responses:
-                '200':
-                    description: Ok
-                    content:
-                        application/json:
-                            schema:
-                                type: number
-                                format: double
-            tags:
-                - Post
-            security: []
-            parameters:
-                -
-                    in: query
-                    name: pid
-                    required: true
-                    schema:
-                        format: double
-                        type: number
     /posts/search:
         post:
             operationId: Search
@@ -766,6 +719,109 @@ paths:
                     schema:
                         format: double
                         type: number
+    /posts/delete:
+        post:
+            operationId: DeletePost
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                pid:
+                                    type: number
+                                    format: double
+                            required:
+                                - pid
+                            type: object
+    /posts/like:
+        put:
+            operationId: LikePost
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                anyOf:
+                                    - {$ref: '#/components/schemas/PostResponse'}
+                                    - {type: string}
+            tags:
+                - Post
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                userId:
+                                    type: number
+                                    format: double
+                                pid:
+                                    type: number
+                                    format: double
+                            required:
+                                - userId
+                                - pid
+                            type: object
+    /posts/likescount:
+        get:
+            operationId: GetLikesCount
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                type: number
+                                format: double
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: query
+                    name: pid
+                    required: true
+                    schema:
+                        format: double
+                        type: number
+    /posts/getcomments:
+        get:
+            operationId: GetComments
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: '#/components/schemas/getCommentResponse'
+                                type: array
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: query
+                    name: postId
+                    required: true
+                    schema:
+                        format: double
+                        type: number
     /posts/addComment:
         post:
             operationId: AddComment
@@ -799,46 +855,6 @@ paths:
                                 - text
                                 - pid
                             type: object
-    /posts/getcomments:
-        get:
-            operationId: GetComments
-            responses:
-                '200':
-                    description: Ok
-                    content:
-                        application/json:
-                            schema:
-                                items:
-                                    $ref: '#/components/schemas/getCommentResponse'
-                                type: array
-            tags:
-                - Post
-            security: []
-            parameters:
-                -
-                    in: query
-                    name: postId
-                    required: true
-                    schema:
-                        format: double
-                        type: number
-    '/posts/deletecomment/{cid}':
-        delete:
-            operationId: DeleteComment
-            responses:
-                '204':
-                    description: 'No content'
-            tags:
-                - Post
-            security: []
-            parameters:
-                -
-                    in: path
-                    name: cid
-                    required: true
-                    schema:
-                        format: double
-                        type: number
     '/posts/editcomment/{cid}':
         put:
             operationId: EditComment
@@ -871,6 +887,23 @@ paths:
                             required:
                                 - text
                             type: object
+    '/posts/deletecomment/{cid}':
+        delete:
+            operationId: DeleteComment
+            responses:
+                '204':
+                    description: 'No content'
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: path
+                    name: cid
+                    required: true
+                    schema:
+                        format: double
+                        type: number
 servers:
     -
         url: /

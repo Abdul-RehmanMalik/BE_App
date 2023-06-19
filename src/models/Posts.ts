@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose'
+import mongoose, { Document, Schema, Model } from 'mongoose'
 import { getSequenceNextValue } from '../util/getSequenceNextValue'
 export interface PostPayload {
   /**
@@ -28,6 +28,22 @@ export interface PostPayload {
   easeOfTransportation?: string
   safety?: string
   location: string
+}
+
+export interface getPostResponse {
+  pid: number
+  title: string
+  description: string
+  images?: string[]
+
+  postedBy: {
+    _id: string
+    id: number
+    name: string
+    profilePicture: string
+  }
+  likes: mongoose.Types.ObjectId[]
+  liked?: boolean
 }
 export interface PostComment {
   cid: number
@@ -63,8 +79,11 @@ export interface PostDocument extends Document {
   easeOfTransportation?: string
   safety?: string
   location: string
+  liked: boolean
 }
-
+interface PostModel extends Model<PostDocument> {
+  search(query: string): Promise<getPostResponse[]>
+}
 const postSchema = new Schema<PostDocument>({
   pid: {
     type: Number,
@@ -120,6 +139,7 @@ const postSchema = new Schema<PostDocument>({
     type: String,
     required: true,
   },
+  liked: { type: Boolean, default: false },
 })
 
 postSchema.pre('save', async function (next) {
@@ -128,5 +148,64 @@ postSchema.pre('save', async function (next) {
   }
   next()
 })
+postSchema.statics.search = async function (
+  query: string
+): Promise<getPostResponse[]> {
+  const posts: getPostResponse[] = await this.aggregate([
+    {
+      $addFields: {
+        titleMatch: {
+          $cond: [
+            { $regexMatch: { input: '$title', regex: query, options: 'i' } },
+            8, //weight for title
+            0,
+          ],
+        },
+        descriptionMatch: {
+          $cond: [
+            {
+              $regexMatch: {
+                input: '$description',
+                regex: query,
+                options: 'i',
+              },
+            },
+            5, //weight for description
+            0,
+          ],
+        },
+        locationMatch: {
+          $cond: [
+            {
+              $regexMatch: { input: '$location', regex: query, options: 'i' },
+            },
+            10, //weight for location
+            0,
+          ],
+        },
+      },
+    },
+    {
+      $addFields: {
+        totalWeight: {
+          $add: ['$titleMatch', '$descriptionMatch', '$locationMatch'],
+        },
+      },
+    },
+    {
+      $sort: {
+        totalWeight: -1,
+      },
+    },
+  ])
 
-export default mongoose.model<PostDocument>('Post', postSchema)
+  if (posts.length === 0) {
+    throw {
+      code: 404, // 404 means not found
+      message: 'No Posts Found.',
+    }
+  }
+
+  return posts
+}
+export default mongoose.model<PostDocument, PostModel>('Post', postSchema)

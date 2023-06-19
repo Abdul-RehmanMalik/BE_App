@@ -19,7 +19,8 @@ import User from '../models/User'
 import { Readable } from 'stream'
 import { Request as ExpressRequest } from 'express'
 import { UserDetailsResponse } from './auth'
-
+import { getPostResponse } from '../models/Posts'
+import { CustomRequest } from '../types/system/express'
 @Route('/posts')
 @Tags('Post')
 export class PostController {
@@ -100,146 +101,12 @@ export class PostController {
       throw error
     }
   }
-  //edit post
-  // delete post
-  @Put('/like')
-  public async likePost(
-    @Body() body: { pid: number; userId: number }
-  ): Promise<PostResponse | string> {
-    try {
-      const { pid, userId } = body
-      console.log('Body:', body)
-      const post = await Posts.findOne({ pid })
-      if (!post) {
-        throw {
-          code: 404, // 404 means not found
-          message: 'Post not found.',
-        }
-      }
-      const user = await User.findOne({ id: userId })
-      if (!user) {
-        throw {
-          code: 404, // 404 means not found
-          message: 'User not found.',
-        }
-      }
-      if (!post.likes.includes(user._id)) {
-        post.likes.push(user._id)
-      } else {
-        const index = post.likes.indexOf(user._id)
-        if (index !== -1) {
-          post.likes.splice(index, 1)
-        }
-      }
-      await post.save()
-      return 'Post Liked/Unliked'
-    } catch (error: any) {
-      throw error
-    }
-  }
-  @Get('/likescount')
-  public async getLikesCount(@Query('pid') pid: number): Promise<number> {
-    try {
-      console.log('pid:', pid)
-      const post = await Posts.findOne({ pid })
-
-      if (!post) {
-        throw {
-          code: 404, // 404 means not found
-          message: 'Post not found.',
-        }
-      }
-
-      const likesCount = post.likes.length
-      console.log('likescount:', likesCount)
-      return likesCount
-    } catch (error: any) {
-      console.log('Error', error)
-      throw error
-    }
-  }
-
-  //Please  ignore comments for now.
-  // @Post('/search')
-  // public async search(
-  //   @Body() body: { query: string }
-  // ): Promise<getPostResponse[]> {
-  //   const { query } = body
-  //   const posts: getPostResponse[] = await Posts.find({
-  //     $or: [
-  //       { title: { $regex: query, $options: 'i' } },
-  //       { description: { $regex: query, $options: 'i' } },
-  //       { location: { $regex: query, $options: 'i' } },
-  //     ],
-  //   })
-  //   if (posts.length === 0) {
-  //     throw {
-  //       code: 404, // 404 means not found
-  //       message: 'No Posts Found.',
-  //     }
-  //   }
-  //   return posts
-  // }
   @Post('/search')
   public async search(
     @Body() body: { query: string }
   ): Promise<getPostResponse[]> {
     const { query } = body
-    const posts: getPostResponse[] = await Posts.aggregate([
-      {
-        $addFields: {
-          titleMatch: {
-            $cond: [
-              { $regexMatch: { input: '$title', regex: query, options: 'i' } },
-              8, //weight for title
-              0,
-            ],
-          },
-          descriptionMatch: {
-            $cond: [
-              {
-                $regexMatch: {
-                  input: '$description',
-                  regex: query,
-                  options: 'i',
-                },
-              },
-              5, //weight for description
-              0,
-            ],
-          },
-          locationMatch: {
-            $cond: [
-              {
-                $regexMatch: { input: '$location', regex: query, options: 'i' },
-              },
-              10, //weight for location
-              0,
-            ],
-          },
-        },
-      },
-      {
-        $addFields: {
-          totalWeight: {
-            $add: ['$titleMatch', '$descriptionMatch', '$locationMatch'],
-          },
-        },
-      },
-      {
-        $sort: {
-          totalWeight: -1,
-        },
-      },
-    ])
-
-    if (posts.length === 0) {
-      throw {
-        code: 404, // 404 means not found
-        message: 'No Posts Found.',
-      }
-    }
-
+    const posts: getPostResponse[] = await Posts.search(query)
     return posts
   }
   //Please  ignore comments for now.
@@ -268,18 +135,20 @@ export class PostController {
   //     throw error
   //   }
   // }
+
   @Get('/getall')
   public async getAllPosts(
-    @Request() req: ExpressRequest
+    @Request() req: CustomRequest
   ): Promise<paginationResponse> {
     try {
       const page = parseInt(req.query.page as string) || 1
-      const limit = parseInt(req.query.limit as string) || 2 //limit of posts per page
+      const limit = 2 //limit of posts per page
       const skip = (page - 1) * limit
-
+      const user = req.user
+      console.log('User:', user)
       const totalPosts = await Posts.countDocuments()
 
-      const postResponses: getPostResponse[] = await Posts.find()
+      const posts: getPostResponse[] = await Posts.find()
         .select({
           _id: 0,
           pid: 1,
@@ -287,6 +156,8 @@ export class PostController {
           description: 1,
           images: 1,
           postedBy: 1,
+          likes: 1,
+          liked: 1,
         })
         .populate({
           path: 'postedBy',
@@ -295,7 +166,10 @@ export class PostController {
         .skip(skip)
         .limit(limit)
         .lean()
-
+      const postResponses: getPostResponse[] = posts.map((post) => ({
+        ...post,
+        liked: post.likes.includes(user._id),
+      }))
       const totalPages = Math.ceil(totalPosts / limit)
 
       const response = {
@@ -342,6 +216,8 @@ export class PostController {
           description: 1,
           images: 1,
           postedBy: 1,
+          likes: 1,
+          liked: 1,
         })
         .populate({
           path: 'postedBy',
@@ -351,6 +227,10 @@ export class PostController {
         .limit(limit)
         .lean()
 
+      const postResponses: getPostResponse[] = posts.map((post) => ({
+        ...post,
+        liked: post.likes.includes(user._id),
+      }))
       const totalPages = Math.ceil(totalPosts / limit)
 
       const response = {
@@ -358,7 +238,7 @@ export class PostController {
         limit,
         totalPages,
         totalPosts,
-        data: posts,
+        data: postResponses,
       }
 
       console.log(response)
@@ -366,6 +246,137 @@ export class PostController {
     } catch (error) {
       console.log('error:', error)
 
+      throw error
+    }
+  }
+  //edit post
+  // delete post
+  @Post('/delete')
+  public async deletePost(
+    @Body()
+    body: {
+      pid: number
+    }
+  ): Promise<string> {
+    try {
+      const { pid } = body
+      console.log('Body:', body)
+
+      const post = await Posts.findOneAndRemove({ pid })
+      if (!post) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Post not found.',
+        }
+      }
+
+      return 'Post deleted successfully'
+    } catch (error: any) {
+      console.log('Error:', error)
+      throw error
+    }
+  }
+  @Put('/like')
+  public async likePost(
+    @Body() body: { pid: number; userId: number }
+  ): Promise<PostResponse | string> {
+    try {
+      const { pid, userId } = body
+      console.log('Body:', body)
+      const post = await Posts.findOne({ pid })
+      if (!post) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Post not found.',
+        }
+      }
+      const user = await User.findOne({ id: userId })
+      if (!user) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'User not found.',
+        }
+      }
+      if (!post.likes.includes(user._id)) {
+        post.likes.push(user._id)
+      } else {
+        const index = post.likes.indexOf(user._id)
+        if (index !== -1) {
+          post.likes.splice(index, 1)
+        }
+      }
+      await post.save()
+      console.log('post like')
+      return 'Post Liked/Unliked'
+    } catch (error: any) {
+      throw error
+    }
+  }
+  @Get('/likescount')
+  public async getLikesCount(@Query('pid') pid: number): Promise<number> {
+    try {
+      console.log('pid:', pid)
+      const post = await Posts.findOne({ pid })
+
+      if (!post) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Post not found.',
+        }
+      }
+
+      const likesCount = post.likes.length
+      console.log('likescount:', likesCount)
+      return likesCount
+    } catch (error: any) {
+      console.log('Error', error)
+      throw error
+    }
+  }
+  //Please  ignore comments for now.
+  // @Post('/search')
+  // public async search(
+  //   @Body() body: { query: string }
+  // ): Promise<getPostResponse[]> {
+  //   const { query } = body
+  //   const posts: getPostResponse[] = await Posts.find({
+  //     $or: [
+  //       { title: { $regex: query, $options: 'i' } },
+  //       { description: { $regex: query, $options: 'i' } },
+  //       { location: { $regex: query, $options: 'i' } },
+  //     ],
+  //   })
+  //   if (posts.length === 0) {
+  //     throw {
+  //       code: 404, // 404 means not found
+  //       message: 'No Posts Found.',
+  //     }
+  //   }
+  //   return posts
+  // }
+  @Get('/getcomments')
+  public async getComments(
+    @Query('postId') postId: number
+  ): Promise<getCommentResponse[]> {
+    try {
+      const post: getCommentResponse[] | null = await Posts.findOne({
+        pid: postId,
+      })
+        .select({ _id: 0, comments: 1 })
+        .populate({
+          path: 'comments.commentedBy',
+          select: 'id name profilePicture',
+        })
+
+      if (!post) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Post not found.',
+        }
+      }
+      return post
+    } catch (error) {
+      console.error('Error fetching comments:', error)
       throw error
     }
   }
@@ -416,60 +427,6 @@ export class PostController {
       throw error
     }
   }
-  @Get('/getcomments')
-  public async getComments(
-    @Query('postId') postId: number
-  ): Promise<getCommentResponse[]> {
-    try {
-      const post: getCommentResponse[] | null = await Posts.findOne({
-        pid: postId,
-      })
-        .select({ _id: 0, comments: 1 })
-        .populate({
-          path: 'comments.commentedBy',
-          select: 'id name profilePicture',
-        })
-
-      if (!post) {
-        throw {
-          code: 404, // 404 means not found
-          message: 'Post not found.',
-        }
-      }
-      return post
-    } catch (error) {
-      console.error('Error fetching comments:', error)
-      throw error
-    }
-  }
-  @Delete('/deletecomment/:cid')
-  public async deleteComment(@Path('cid') cid: number): Promise<void> {
-    try {
-      const post = await Posts.findOne({ 'comments.cid': cid })
-      if (!post) {
-        throw {
-          code: 404, // 404 means not found
-          message: 'Comment not found.',
-        }
-      }
-
-      const commentIndex = post.comments.findIndex(
-        (comment: PostComment) => comment.cid === cid
-      )
-      if (commentIndex === -1) {
-        throw {
-          code: 404, // 404 means not found
-          message: 'Comment not found.',
-        }
-      }
-
-      post.comments.splice(commentIndex, 1)
-      console.log('Comment deleted SuccessFully')
-      await post.save()
-    } catch (error: any) {
-      throw error
-    }
-  }
   @Put('/editcomment/:cid')
   public async editComment(
     @Path('cid') cid: number,
@@ -510,6 +467,34 @@ export class PostController {
       }
 
       return updatedComment
+    } catch (error: any) {
+      throw error
+    }
+  }
+  @Delete('/deletecomment/:cid')
+  public async deleteComment(@Path('cid') cid: number): Promise<void> {
+    try {
+      const post = await Posts.findOne({ 'comments.cid': cid })
+      if (!post) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Comment not found.',
+        }
+      }
+
+      const commentIndex = post.comments.findIndex(
+        (comment: PostComment) => comment.cid === cid
+      )
+      if (commentIndex === -1) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Comment not found.',
+        }
+      }
+
+      post.comments.splice(commentIndex, 1)
+      console.log('Comment deleted SuccessFully')
+      await post.save()
     } catch (error: any) {
       throw error
     }
@@ -559,19 +544,6 @@ interface CommentResponse {
    * @example "This is a comment"
    */
   text: string
-}
-interface getPostResponse {
-  pid: number
-  title: string
-  description: string
-  images?: string[]
-
-  postedBy: {
-    _id: string
-    id: number
-    name: string
-    profilePicture: string
-  }
 }
 interface Like {
   _id: string
