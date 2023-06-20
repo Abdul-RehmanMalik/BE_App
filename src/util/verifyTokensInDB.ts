@@ -19,6 +19,7 @@ export const verifyTokenInDB = async (
     dbUser.tokens[tokenType] === token
   ) {
     return {
+      _id: dbUser._id,
       id: dbUser.id,
       name: dbUser.name,
       isActivated: dbUser.isActivated,

@@ -73,7 +73,6 @@ export class PostController {
           fileStream.pipe(cld_upload_stream)
         })
       })
-
       const uploadedImageUrls = await Promise.all(uploadPromises)
       imageUrls.push(...uploadedImageUrls)
       const newPost = new Posts({
@@ -103,39 +102,19 @@ export class PostController {
   }
   @Post('/search')
   public async search(
-    @Body() body: { query: string }
+    @Body() body: { query: string; page: number }
   ): Promise<getPostResponse[]> {
-    const { query } = body
-    const posts: getPostResponse[] = await Posts.search(query)
-    return posts
+    try {
+      const { query, page } = body
+      const limit = 2
+      const posts: getPostResponse[] = await Posts.search(query, page, limit)
+
+      return posts
+    } catch (error) {
+      console.log('error:', error)
+      throw error
+    }
   }
-  //Please  ignore comments for now.
-  // @Get('/getall')
-  // public async getAllPosts(
-  //   @Request() req: Express.Request
-  // ): Promise<getPostResponse[]> {
-  //   try {
-  //     const postResponses: getPostResponse[] = await Posts.find()
-  //       .select({
-  //         _id: 0,
-  //         pid: 1,
-  //         title: 1,
-  //         description: 1,
-  //         images: 1,
-  //         postedBy: 1,
-  //       })
-  //       .populate({
-  //         path: 'postedBy',
-  //         select: 'id name profilePicture',
-  //       })
-
-  //     console.log(postResponses)
-  //     return postResponses
-  //   } catch (error) {
-  //     throw error
-  //   }
-  // }
-
   @Get('/getall')
   public async getAllPosts(
     @Request() req: CustomRequest
@@ -145,7 +124,7 @@ export class PostController {
       const limit = 2 //limit of posts per page
       const skip = (page - 1) * limit
       const user = req.user
-      console.log('User:', user)
+      console.log('User:', user._id)
       const totalPosts = await Posts.countDocuments()
 
       const posts: getPostResponse[] = await Posts.find()
@@ -163,13 +142,19 @@ export class PostController {
           path: 'postedBy',
           select: 'id name profilePicture',
         })
+        .populate('likes')
         .skip(skip)
         .limit(limit)
         .lean()
       const postResponses: getPostResponse[] = posts.map((post) => ({
         ...post,
-        liked: post.likes.includes(user._id),
+        liked: post.likes.some(
+          (like) => like._id.toString() === user._id.toString()
+        )
+          ? true
+          : false,
       }))
+
       const totalPages = Math.ceil(totalPosts / limit)
 
       const response = {
@@ -205,7 +190,6 @@ export class PostController {
           message: 'User not found.',
         }
       }
-      // console.log('user:', user)
       const posts: getPostResponse[] = await Posts.find({
         postedBy: user._id,
       })
@@ -223,14 +207,23 @@ export class PostController {
           path: 'postedBy',
           select: 'id name profilePicture',
         })
+        .populate({
+          path: 'likes',
+          select: '_id',
+        })
         .skip(skip)
         .limit(limit)
         .lean()
 
       const postResponses: getPostResponse[] = posts.map((post) => ({
         ...post,
-        liked: post.likes.includes(user._id),
+        liked: post.likes.some(
+          (like) => like._id.toString() === user._id.toString()
+        )
+          ? true
+          : false,
       }))
+
       const totalPages = Math.ceil(totalPosts / limit)
 
       const response = {
@@ -250,7 +243,6 @@ export class PostController {
     }
   }
   //edit post
-  // delete post
   @Post('/delete')
   public async deletePost(
     @Body()
@@ -313,10 +305,10 @@ export class PostController {
     }
   }
   @Get('/likescount')
-  public async getLikesCount(@Query('pid') pid: number): Promise<number> {
+  public async getLikesCount(@Query('postId') postId: number): Promise<number> {
     try {
-      console.log('pid:', pid)
-      const post = await Posts.findOne({ pid })
+      console.log('pid:', postId)
+      const post = await Posts.findOne({ pid: postId })
 
       if (!post) {
         throw {
@@ -333,27 +325,33 @@ export class PostController {
       throw error
     }
   }
-  //Please  ignore comments for now.
-  // @Post('/search')
-  // public async search(
-  //   @Body() body: { query: string }
-  // ): Promise<getPostResponse[]> {
-  //   const { query } = body
-  //   const posts: getPostResponse[] = await Posts.find({
-  //     $or: [
-  //       { title: { $regex: query, $options: 'i' } },
-  //       { description: { $regex: query, $options: 'i' } },
-  //       { location: { $regex: query, $options: 'i' } },
-  //     ],
-  //   })
-  //   if (posts.length === 0) {
-  //     throw {
-  //       code: 404, // 404 means not found
-  //       message: 'No Posts Found.',
-  //     }
-  //   }
-  //   return posts
-  // }
+  @Get('/getlikes')
+  public async getLikes(
+    @Query('postId') postId: number
+  ): Promise<LikesResponse[]> {
+    try {
+      const response: LikesResponse[] | null = await Posts.findOne({
+        pid: postId,
+      })
+        .select({ _id: 0, likes: 1 })
+        .populate({
+          path: 'likes',
+          select: 'id name profilePicture',
+        })
+
+      if (!response) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Post not found.',
+        }
+      }
+      console.log('Like Response:', response)
+      return response
+    } catch (error) {
+      console.error('Error fetching likes:', error)
+      throw error
+    }
+  }
   @Get('/getcomments')
   public async getComments(
     @Query('postId') postId: number

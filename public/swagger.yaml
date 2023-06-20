@@ -301,6 +301,39 @@ components:
                 - data
             type: object
             additionalProperties: false
+        Like:
+            properties:
+                _id:
+                    type: string
+                id:
+                    type: number
+                    format: double
+                name:
+                    type: string
+                profilePicture:
+                    type: string
+            required:
+                - _id
+                - id
+                - name
+                - profilePicture
+            type: object
+            additionalProperties: false
+        LikesResponse:
+            properties:
+                count:
+                    type: number
+                    format: double
+                data:
+                    items:
+                        $ref: '#/components/schemas/Like'
+                    type: array
+                    nullable: true
+            required:
+                - count
+                - data
+            type: object
+            additionalProperties: false
         getCommentResponse:
             properties:
                 cid:
@@ -679,9 +712,13 @@ paths:
                     application/json:
                         schema:
                             properties:
+                                page:
+                                    type: number
+                                    format: double
                                 query:
                                     type: string
                             required:
+                                - page
                                 - query
                             type: object
     /posts/getall:
@@ -794,7 +831,30 @@ paths:
             parameters:
                 -
                     in: query
-                    name: pid
+                    name: postId
+                    required: true
+                    schema:
+                        format: double
+                        type: number
+    /posts/getlikes:
+        get:
+            operationId: GetLikes
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                items:
+                                    $ref: '#/components/schemas/LikesResponse'
+                                type: array
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: query
+                    name: postId
                     required: true
                     schema:
                         format: double

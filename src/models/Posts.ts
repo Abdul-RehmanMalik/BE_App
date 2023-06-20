@@ -82,7 +82,7 @@ export interface PostDocument extends Document {
   liked: boolean
 }
 interface PostModel extends Model<PostDocument> {
-  search(query: string): Promise<getPostResponse[]>
+  search(query: string, limit: number, page: number): Promise<getPostResponse[]>
 }
 const postSchema = new Schema<PostDocument>({
   pid: {
@@ -149,8 +149,12 @@ postSchema.pre('save', async function (next) {
   next()
 })
 postSchema.statics.search = async function (
-  query: string
+  query: string,
+  page: number,
+  limit: number
 ): Promise<getPostResponse[]> {
+  const skip = Math.max((page - 1) * limit, 0)
+
   const posts: getPostResponse[] = await this.aggregate([
     {
       $addFields: {
@@ -197,15 +201,22 @@ postSchema.statics.search = async function (
         totalWeight: -1,
       },
     },
+    {
+      $skip: skip,
+    },
+    {
+      $limit: limit,
+    },
   ])
 
   if (posts.length === 0) {
     throw {
-      code: 404, // 404 means not found
+      code: 404,
       message: 'No Posts Found.',
     }
   }
 
   return posts
 }
+
 export default mongoose.model<PostDocument, PostModel>('Post', postSchema)

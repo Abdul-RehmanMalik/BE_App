@@ -77,6 +77,10 @@ export const getcommentvalidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     postId: pidSchema.required(),
   }).validate(data)
+  export const getlikesvalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    postId: pidSchema.required(),
+  }).validate(data)
 export const deleteeditcommentvalidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     cid: cidSchema.required(),

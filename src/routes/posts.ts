@@ -7,6 +7,7 @@ import {
   deleteeditcommentvalidation,
   deletepostvalidation,
   getcommentvalidation,
+  getlikesvalidation,
   getuserpostvalidation,
   likescountvalidation,
   likeunlikepostvalidation,
@@ -93,12 +94,28 @@ postRouter.get('/likescount', async (req, res) => {
   try {
     const {
       error,
-      value: { pid },
+      value: { postId },
     } = likescountvalidation(req.query)
     if (error) return res.status(400).send(error.details[0].message)
-    const response = await postController.getLikesCount(pid)
+    const response = await postController.getLikesCount(postId)
     res.send(response)
   } catch (err: any) {
+    res.status(err.code).send(err.message)
+  }
+})
+postRouter.get('/getlikes', async (req, res) => {
+  try {
+    const {
+      error,
+      value: { postId },
+    } = getlikesvalidation(req.query)
+    if (error) return res.status(400).send(error.details[0].message)
+    console.log('in try')
+    // const postId = Number(req.query.postId)
+    const response = await postController.getLikes(postId)
+    res.send(response)
+  } catch (err: any) {
+    console.log('in catch')
     res.status(err.code).send(err.message)
   }
 })
