@@ -1,5 +1,7 @@
 export interface RequestUser {
-  id: number;
-  name: string;
-  isActivated: boolean;
+  _id: string
+  id: number
+  name: string
+  isActivated: boolean
+  profilePicture: string
 }

@@ -82,11 +82,7 @@ const authenticateToken = async (
     if (!token) {
       throw "Unauthorized";
     }    
-    const token_= String(token);
-    const data: any = jwt.verify(token_, key);
-    console.log("data:",data);
-    const user = await verifyTokenInDB(data?.id,token,tokenType);
-    console.log("user:",user);
+    const user = await verifyTokenInDB(id,token,tokenType);
     if (!user) {
       throw "Unauthorized";
     }
@@ -110,11 +106,8 @@ const authPasswordResetToken = async (
     if (!token) {
       throw "Unauthorized";
     }    
-    //const token_= String(token);
     const data: any = jwt.verify(token, key);
-    console.log("data:",data);
     const user = await verifyTokenInDB(data?.id, token,tokenType);
-    console.log("user:",user);
     if (!user) {
       throw "Unauthorized";
     }
