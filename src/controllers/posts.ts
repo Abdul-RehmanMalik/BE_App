@@ -18,7 +18,7 @@ import { getSequenceNextValue } from '../util/getSequenceNextValue'
 import User from '../models/User'
 import { Readable } from 'stream'
 import { Request as ExpressRequest } from 'express'
-import { UserDetailsResponse } from './auth'
+import { UserDetailsResponse } from '../models/User'
 import { getPostResponse } from '../models/Posts'
 import { CustomRequest } from '../types/system/express'
 @Route('/posts')
@@ -30,7 +30,6 @@ export class PostController {
     @Body() body: PostPayload
   ): Promise<PostResponse | string> {
     try {
-      console.log('Body in controller:', body)
       const {
         title,
         description,
@@ -236,6 +235,37 @@ export class PostController {
 
       console.log(response)
       return response
+    } catch (error) {
+      console.log('error:', error)
+
+      throw error
+    }
+  }
+  @Get('/getdetails')
+  public async getdetails(
+    @Request() req: ExpressRequest,
+    @Query('postId') postId: number
+  ): Promise<GetDetailsResponse> {
+    try {
+      const post = await Posts.findOne({ pid: postId })
+      if (!post) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'Post not found.',
+        }
+      }
+
+      const postDetails = {
+        location: post.location,
+        heritage: post.heritage,
+        placesToVisit: post.placesToVisit,
+        communityAccess: post.communityAccess,
+        easeOfTransportation: post.easeOfTransportation,
+        safety: post.safety,
+        cost: post.cost,
+      }
+      console.log('Post Details:', postDetails)
+      return postDetails
     } catch (error) {
       console.log('error:', error)
 
@@ -569,4 +599,13 @@ interface getCommentResponse {
     profilePicture: string
   }
   text: string
+}
+interface GetDetailsResponse {
+  location: string
+  heritage?: string
+  placesToVisit?: string[]
+  communityAccess?: string
+  easeOfTransportation?: string
+  safety?: string
+  cost: number
 }

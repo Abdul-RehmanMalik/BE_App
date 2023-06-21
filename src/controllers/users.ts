@@ -13,7 +13,7 @@ import {
   Put,
 } from 'tsoa'
 import cloudinary from '../util/cloudinaryConfig'
-import { UserDetailsResponse } from './auth'
+import { UserDetailsResponse } from '../models/User'
 import { Readable } from 'stream'
 @Route('/user')
 @Tags('User')
@@ -27,16 +27,17 @@ export class UserController {
     name: 'John Snow',
     email: 'johnSnow01@gmail.com',
     address: 'H#123 Block 2 Sector J, Abc Town, NY',
+    profilePicture: 'string',
   })
-  @Get('{name}')
+  @Get('{userId}')
   public async getUser(
     @Request() req: express.Request,
-    @Path() name: string
+    @Path('userId') userId: string
   ): Promise<UserDetailsResponse> {
-    // Find the user by name.
+    // Find the user by userId.
     console.log('in controller')
 
-    const user = await User.findOne({ name })
+    const user = await User.findOne({ id: userId })
     if (!user) {
       throw {
         code: 404, // 404 means not found
@@ -48,6 +49,7 @@ export class UserController {
       email: user.email,
       name: user.name,
       address: user.address,
+      profilePicture: user.profilePicture,
     }
   }
 

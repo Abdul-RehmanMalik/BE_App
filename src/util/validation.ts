@@ -73,11 +73,15 @@ export const getuserpostvalidation = (data: any): Joi.ValidationResult =>
     page: pageSchema.required(),
     // limit: limitSchema.required(),
   }).validate(data)
+  export const getpostdetailsvalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    postId: pidSchema.required(),
+  }).validate(data)
 export const getcommentvalidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     postId: pidSchema.required(),
   }).validate(data)
-  export const getlikesvalidation = (data: any): Joi.ValidationResult =>
+export const getlikesvalidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     postId: pidSchema.required(),
   }).validate(data)
@@ -110,5 +114,5 @@ export const signUpValidation = (data: any): Joi.ValidationResult =>
   }).validate(data)
 export const getUserValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
-    username: usernameschema.required(),
+    userId: userIdSchema.required(),
   }).validate(data)

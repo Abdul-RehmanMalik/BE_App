@@ -1,4 +1,4 @@
-import User, { PasswordUtils, UserPayload } from '../models/User'
+import User, { PasswordUtils, UserDetailsResponse, UserPayload } from '../models/User'
 import {
   Security,
   Get,
@@ -29,6 +29,7 @@ export class AuthController {
     name: 'John Snow',
     email: 'johnSnow01@gmail.com',
     address: 'H#123 Block 2 Sector J, Abc Town, NY',
+    profilePicture: "string"
   })
   @Post('/signup')
   public async signUp(
@@ -291,8 +292,4 @@ interface ForgotPasswordPayload {
   email: string
 }
 
-export interface UserDetailsResponse {
-  email: string
-  name: string
-  address: string
-}
+

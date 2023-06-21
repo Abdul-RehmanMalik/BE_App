@@ -10,13 +10,13 @@ import { upload } from '../middleware/multermiddleware'
 const userRouter = express.Router()
 const userController = new UserController()
 // getuser route
-userRouter.get('/:username', async (req, res) => {
+userRouter.get('/:userId', async (req, res) => {
   const { error, value: params } = getUserValidation(req.params)
   if (error) return res.status(400).send(error.details[0].message)
-  const { username } = params
+  const { userId } = params
   try {
     console.log('in route')
-    const response = await userController.getUser(req, username)
+    const response = await userController.getUser(req, userId)
     res.send(response)
   } catch (err: any) {
     res.status(err.code).send(err.message)

@@ -8,6 +8,7 @@ import {
   deletepostvalidation,
   getcommentvalidation,
   getlikesvalidation,
+  getpostdetailsvalidation,
   getuserpostvalidation,
   likescountvalidation,
   likeunlikepostvalidation,
@@ -39,6 +40,19 @@ postRouter.get('/getuserposts', async (req, res) => {
     } = getuserpostvalidation(req.query)
     if (error) return res.status(400).send(error.details[0].message)
     const response = await postController.findPostsByUserId(req, userId)
+    res.send(response)
+  } catch (err: any) {
+    res.status(err.code).send(err.message)
+  }
+})
+postRouter.get('/getdetails', async (req, res) => {
+  try {
+    const {
+      error,
+      value: { postId },
+    } = getpostdetailsvalidation(req.query)
+    if (error) return res.status(400).send(error.details[0].message)
+    const response = await postController.getdetails(req, postId)
     res.send(response)
   } catch (err: any) {
     res.status(err.code).send(err.message)

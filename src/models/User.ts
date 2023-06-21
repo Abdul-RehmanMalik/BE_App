@@ -23,6 +23,12 @@ export interface UserPayload {
    */
   address: string;
 }
+export interface UserDetailsResponse {
+  email: string
+  name: string
+  address: string
+  profilePicture: string
+}
 interface UserDocument extends UserPayload, Document {
   tokens: { accessToken: string; refreshToken: string; activationToken: string; passwordResetToken: string };
   isActivated: boolean

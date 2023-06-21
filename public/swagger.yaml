@@ -71,10 +71,13 @@ components:
                     type: string
                 address:
                     type: string
+                profilePicture:
+                    type: string
             required:
                 - email
                 - name
                 - address
+                - profilePicture
             type: object
             additionalProperties: false
         UserSearchResponse:
@@ -301,6 +304,30 @@ components:
                 - data
             type: object
             additionalProperties: false
+        GetDetailsResponse:
+            properties:
+                location:
+                    type: string
+                heritage:
+                    type: string
+                placesToVisit:
+                    items:
+                        type: string
+                    type: array
+                communityAccess:
+                    type: string
+                easeOfTransportation:
+                    type: string
+                safety:
+                    type: string
+                cost:
+                    type: number
+                    format: double
+            required:
+                - location
+                - cost
+            type: object
+            additionalProperties: false
         Like:
             properties:
                 _id:
@@ -388,7 +415,7 @@ paths:
                                     - {type: string}
                             examples:
                                 'Example 1':
-                                    value: {name: 'John Snow', email: johnSnow01@gmail.com, address: 'H#123 Block 2 Sector J, Abc Town, NY'}
+                                    value: {name: 'John Snow', email: johnSnow01@gmail.com, address: 'H#123 Block 2 Sector J, Abc Town, NY', profilePicture: string}
             summary: 'Create user with the following attributes: email, Name, Password, address.'
             tags:
                 - Auth
@@ -571,7 +598,7 @@ paths:
                                 - id
                                 - password
                             type: object
-    '/user/{name}':
+    '/user/{userId}':
         get:
             operationId: GetUser
             responses:
@@ -583,20 +610,18 @@ paths:
                                 $ref: '#/components/schemas/UserDetailsResponse'
                             examples:
                                 'Example 1':
-                                    value: {name: 'John Snow', email: johnSnow01@gmail.com, address: 'H#123 Block 2 Sector J, Abc Town, NY'}
+                                    value: {name: 'John Snow', email: johnSnow01@gmail.com, address: 'H#123 Block 2 Sector J, Abc Town, NY', profilePicture: string}
             summary: 'Get user properties - such as name, email and address.'
             tags:
                 - User
             security: []
             parameters:
                 -
-                    description: 'The User''s name'
                     in: path
-                    name: name
+                    name: userId
                     required: true
                     schema:
                         type: string
-                    example: johnSnow01
     /user/search:
         post:
             operationId: SearchUser
@@ -752,6 +777,27 @@ paths:
                 -
                     in: query
                     name: userId
+                    required: true
+                    schema:
+                        format: double
+                        type: number
+    /posts/getdetails:
+        get:
+            operationId: Getdetails
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetDetailsResponse'
+            tags:
+                - Post
+            security: []
+            parameters:
+                -
+                    in: query
+                    name: postId
                     required: true
                     schema:
                         format: double
