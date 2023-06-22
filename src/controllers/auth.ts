@@ -1,4 +1,8 @@
-import User, { PasswordUtils, UserDetailsResponse, UserPayload } from '../models/User'
+import User, {
+  PasswordUtils,
+  UserDetailsResponse,
+  UserPayload,
+} from '../models/User'
 import {
   Security,
   Get,
@@ -29,7 +33,7 @@ export class AuthController {
     name: 'John Snow',
     email: 'johnSnow01@gmail.com',
     address: 'H#123 Block 2 Sector J, Abc Town, NY',
-    profilePicture: "string"
+    profilePicture: 'string',
   })
   @Post('/signup')
   public async signUp(
@@ -142,6 +146,39 @@ export class AuthController {
       tokens: user.tokens,
       isActivated: user.isActivated,
     }
+  }
+  @Post('/verifypassword')
+  public async verifyPassword(
+    @Body() body: { id: number; password: string }
+  ): Promise<string> {
+    const { id, password } = body
+    console.log('id:', id)
+    console.log('password:', password)
+
+    // Find the user by email
+    const user = await User.findOne({ id })
+
+    if (!user) {
+      throw {
+        code: 401, //401 Unauthorized is the status code to return when the client provides no credentials or invalid credentials.
+        message: 'Invalid Email or Password',
+      }
+    }
+
+    // Check password validity
+    const isPasswordValid = await PasswordUtils.comparePassword(
+      password,
+      user.password
+    )
+
+    if (!isPasswordValid) {
+      throw {
+        code: 401, //401 Unauthorized is the status code to return when the client provides no credentials or invalid credentials.
+        message: 'Invalid Email or Password',
+      }
+    }
+
+    return 'Password is Valid'
   }
 
   /**
@@ -262,7 +299,27 @@ export class AuthController {
     await user.save()
     return 'Successfully Changed Password'
   }
+  @Post('/updatepassword')
+  public async updatePassword(
+    @Body() body: { newPassword: string; id: string }
+  ): Promise<string> {
+    const { newPassword, id } = body
+    const user = await User.findOne({ id })
+    if (!user) {
+      throw {
+        code: 404, // 404 means not found
+        message: 'User not found.',
+      }
+    }
+    await user.save()
+    // Hash the password
+    const hashedPassword = await PasswordUtils.hashPassword(newPassword)
+    user.password = hashedPassword
+    await user.save()
+    return 'Successfully Changed Password'
+  }
 }
+
 //logout
 const logout = async (req: UserRequest) => {
   await removeTokensInDB((req.user as RequestUser).id)
@@ -291,5 +348,3 @@ interface ForgotPasswordPayload {
    */
   email: string
 }
-
-

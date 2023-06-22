@@ -461,6 +461,35 @@ paths:
                                 - password
                                 - email
                             type: object
+    /auth/verifypassword:
+        post:
+            operationId: VerifyPassword
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+            tags:
+                - Auth
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                password:
+                                    type: string
+                                id:
+                                    type: number
+                                    format: double
+                            required:
+                                - password
+                                - id
+                            type: object
     /auth/logout:
         get:
             operationId: Logout
@@ -671,6 +700,41 @@ paths:
                                     type: number
                                     format: double
                             required:
+                                - id
+                            type: object
+    /user/updateinfo:
+        put:
+            operationId: UpdateInfo
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+            tags:
+                - User
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                address:
+                                    type: string
+                                name:
+                                    type: string
+                                email:
+                                    type: string
+                                id:
+                                    type: number
+                                    format: double
+                            required:
+                                - address
+                                - name
+                                - email
                                 - id
                             type: object
     /session:

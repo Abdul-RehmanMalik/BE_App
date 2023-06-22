@@ -120,6 +120,36 @@ export class UserController {
 
       return 'Profile Picture Updated Successfully'
     } catch (error: any) {
+      console.log('Error:', error)
+      throw {
+        code: 500,
+        message: error.message,
+      }
+    }
+  }
+  @Put('/updateinfo')
+  public async updateInfo(
+    @Request() req: Express.Request,
+    @Body() body: { id: number; email: string; name: string; address: string }
+  ): Promise<string> {
+    try {
+      const { id, email, name, address } = body
+      const user = await User.findOne({ id })
+      if (!user) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'User not found.',
+        }
+      }
+      await User.findOneAndUpdate(
+        { id },
+        { email: email, name: name, address: address }
+      )
+      console.log('User Information Updated Successfully')
+
+      return 'User Information Updated Successfully'
+    } catch (error: any) {
+      console.log('Error:', error)
       throw {
         code: 500,
         message: error.message,
@@ -127,6 +157,7 @@ export class UserController {
     }
   }
 }
+
 export interface UserSearchResponse {
   users: UserDetailsResponse[]
 }
