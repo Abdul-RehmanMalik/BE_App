@@ -69,22 +69,22 @@ postRouter.post('/search', async (req, res) => {
     res.status(err.code).send(err.message)
   }
 })
-postRouter.post('/delete', async (req, res) => {
+postRouter.get('/getall', authenticateAccessToken, async (req, res) => {
   try {
-    const { error, value: body } = deletepostvalidation(req.body)
-    if (error) return res.status(400).send(error.details[0].message)
-    console.log('in like route try')
-    const response = await postController.deletePost(body)
+    console.log('in get all route try')
+    const response = await postController.getAllPosts(req)
     res.send(response)
   } catch (err: any) {
     console.log('in catch')
     res.status(err.code).send(err.message)
   }
 })
-postRouter.get('/getall', authenticateAccessToken, async (req, res) => {
+postRouter.post('/delete', async (req, res) => {
   try {
-    console.log('in get all route try')
-    const response = await postController.getAllPosts(req)
+    const { error, value: body } = deletepostvalidation(req.body)
+    if (error) return res.status(400).send(error.details[0].message)
+    console.log('in like route try')
+    const response = await postController.deletePost(body)
     res.send(response)
   } catch (err: any) {
     console.log('in catch')

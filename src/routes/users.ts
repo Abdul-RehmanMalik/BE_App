@@ -2,6 +2,7 @@ import express from 'express'
 import {
   getUserValidation,
   searchuservalidation,
+  updateprofileinfovalidation,
   updateprofilepicvalidation,
 } from '../util/validation'
 import { UserController } from '../controllers/users'
@@ -53,5 +54,18 @@ userRouter.put(
     }
   }
 )
+userRouter.put('/updateinfo', async (req, res) => {
+  try {
+    const { error, value: body } = updateprofileinfovalidation(req.body)
+    if (error) return res.status(400).send(error.details[0].message)
+    console.log('in try')
+    console.log('Req Body Route:', req.body)
+    const response = await userController.updateInfo(req, body)
+    res.send(response)
+  } catch (err: any) {
+    console.log('in catch')
+    res.status(err.code).send(err.message)
+  }
+})
 
 export default userRouter

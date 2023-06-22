@@ -27,9 +27,26 @@ export const loginValidation = (data: any): Joi.ValidationResult =>
     email: emailSchema.required(),
     password: passwordSchema.required(),
   }).validate(data)
+export const updatePasswordValidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    id: idSchema.required(),
+    newPassword: passwordSchema.required(),
+  }).validate(data)
+export const verifypassValidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    id: idSchema.required(),
+    password: passwordSchema.required(),
+  }).validate(data)
 export const updateprofilepicvalidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     id: idSchema.required(),
+  }).validate(data)
+export const updateprofileinfovalidation = (data: any): Joi.ValidationResult =>
+  Joi.object({
+    id: idSchema.required(),
+    email: emailSchema.required(),
+    name: usernameschema.required(),
+    address: addressSchema.required(),
   }).validate(data)
 export const createpostValidation = (data: any): Joi.ValidationResult =>
   Joi.object({
@@ -73,7 +90,7 @@ export const getuserpostvalidation = (data: any): Joi.ValidationResult =>
     page: pageSchema.required(),
     // limit: limitSchema.required(),
   }).validate(data)
-  export const getpostdetailsvalidation = (data: any): Joi.ValidationResult =>
+export const getpostdetailsvalidation = (data: any): Joi.ValidationResult =>
   Joi.object({
     postId: pidSchema.required(),
   }).validate(data)
