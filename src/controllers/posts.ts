@@ -278,19 +278,39 @@ export class PostController {
     @Body()
     body: {
       pid: number
+      userId: number
     }
   ): Promise<string> {
     try {
-      const { pid } = body
-      console.log('Body:', body)
+      const { pid, userId } = body
 
-      const post = await Posts.findOneAndRemove({ pid })
+      const post = await Posts.findOne({ pid })
       if (!post) {
         throw {
-          code: 404, // 404 means not found
+          code: 404,
           message: 'Post not found.',
         }
       }
+
+      const user = await User.findOne({ id: userId })
+      if (!user) {
+        throw {
+          code: 404,
+          message: 'User not found.',
+        }
+      }
+
+      const isAdmin = user.isAdmin
+      const isPostOwner = post.postedBy.equals(user._id)
+
+      if (!isAdmin && !isPostOwner) {
+        throw {
+          code: 401,
+          message: 'Unauthorized to delete the post.',
+        }
+      }
+
+      await Posts.findOneAndRemove({ pid })
 
       return 'Post deleted successfully'
     } catch (error: any) {
@@ -461,10 +481,19 @@ export class PostController {
     @Body()
     body: {
       text: string
+      userId: number
     }
   ): Promise<CommentResponse> {
     try {
-      const { text } = body
+      const { text, userId } = body
+      const currentUser = await User.findOne({ id: userId })
+      if (!currentUser) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'User not Found',
+        }
+      }
+      const commentOwner = currentUser._id
       const post = await Posts.findOne({ 'comments.cid': cid })
       if (!post) {
         throw {
@@ -483,7 +512,16 @@ export class PostController {
           message: 'Comment not found.',
         }
       }
+      const commentOwnerIsAdmin = currentUser.isAdmin
+      const commentOwnerIsSameUser =
+        post.comments[commentIndex].commentedBy.equals(commentOwner)
 
+      if (!commentOwnerIsSameUser && !commentOwnerIsAdmin) {
+        throw {
+          code: 401,
+          message: 'Unauthorized to edit the comment.',
+        }
+      }
       post.comments[commentIndex].text = text
       await post.save()
       console.log('Comment updated successfully')
@@ -500,8 +538,21 @@ export class PostController {
     }
   }
   @Delete('/deletecomment/:cid')
-  public async deleteComment(@Path('cid') cid: number): Promise<void> {
+  public async deleteComment(
+    @Path('cid') cid: number,
+    @Body() body: { userId: number }
+  ): Promise<void> {
     try {
+      const { userId } = body
+      const currentUser = await User.findOne({ id: userId })
+      if (!currentUser) {
+        throw {
+          code: 404, // 404 means not found
+          message: 'User not Found',
+        }
+      }
+      const commentOwner = currentUser._id
+
       const post = await Posts.findOne({ 'comments.cid': cid })
       if (!post) {
         throw {
@@ -519,7 +570,16 @@ export class PostController {
           message: 'Comment not found.',
         }
       }
+      const commentOwnerIsAdmin = currentUser.isAdmin
+      const commentOwnerIsSameUser =
+        post.comments[commentIndex].commentedBy.equals(commentOwner)
 
+      if (!commentOwnerIsSameUser && !commentOwnerIsAdmin) {
+        throw {
+          code: 401,
+          message: 'Unauthorized to delete the comment.',
+        }
+      }
       post.comments.splice(commentIndex, 1)
       console.log('Comment deleted SuccessFully')
       await post.save()
@@ -529,7 +589,7 @@ export class PostController {
   }
 }
 
-interface PostResponse {
+export interface PostResponse {
   /**
    * Post ID
    * @example 1

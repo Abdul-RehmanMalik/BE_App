@@ -6,6 +6,7 @@ import {
   resetPasswordValidation,
   signUpValidation,
   signUpVerificationValidation,
+  updatePasswordValidation,
   verifypassValidation,
 } from '../util/validation'
 import {
@@ -87,15 +88,15 @@ authRouter.post(
   }
 )
 //update password
-authRouter.post(
+authRouter.put(
   '/updatepassword',
-  
+
   async (req, res) => {
-    const { error, value: body } = resetPasswordValidation(req.body)
+    const { error, value: body } = updatePasswordValidation(req.body)
     if (error) return res.status(400).send(error.details[0].message)
     try {
+      console.log('in route')
       const response = await authController.updatePassword(body)
-      //res.redirect("");
       res.send(response)
     } catch (err: any) {
       res.status(err.code).send(err.message)

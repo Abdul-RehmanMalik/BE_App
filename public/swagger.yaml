@@ -627,6 +627,34 @@ paths:
                                 - id
                                 - password
                             type: object
+    /auth/updatepassword:
+        put:
+            operationId: UpdatePassword
+            responses:
+                '200':
+                    description: Ok
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+            tags:
+                - Auth
+            security: []
+            parameters: []
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                id:
+                                    type: string
+                                newPassword:
+                                    type: string
+                            required:
+                                - id
+                                - newPassword
+                            type: object
     '/user/{userId}':
         get:
             operationId: GetUser
@@ -886,10 +914,14 @@ paths:
                     application/json:
                         schema:
                             properties:
+                                userId:
+                                    type: number
+                                    format: double
                                 pid:
                                     type: number
                                     format: double
                             required:
+                                - userId
                                 - pid
                             type: object
     /posts/like:
@@ -1052,9 +1084,13 @@ paths:
                     application/json:
                         schema:
                             properties:
+                                userId:
+                                    type: number
+                                    format: double
                                 text:
                                     type: string
                             required:
+                                - userId
                                 - text
                             type: object
     '/posts/deletecomment/{cid}':
@@ -1074,6 +1110,18 @@ paths:
                     schema:
                         format: double
                         type: number
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            properties:
+                                userId:
+                                    type: number
+                                    format: double
+                            required:
+                                - userId
+                            type: object
 servers:
     -
         url: /

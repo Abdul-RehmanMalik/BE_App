@@ -169,7 +169,6 @@ postRouter.put('/editcomment/:cid', async (req, res) => {
     } = deleteeditcommentvalidation(req.params)
     if (error) return res.status(400).send(error.details[0].message)
     console.log('in try edit comment')
-    // const cid = Number(req.params.cid)
     const response = await postController.editComment(cid, req.body)
     res.send(response)
   } catch (err: any) {
@@ -186,7 +185,7 @@ postRouter.delete('/deletecomment/:cid', async (req, res) => {
     if (error) return res.status(400).send(error.details[0].message)
     console.log('in try')
     // const cid = Number(req.params.cid)
-    const response = await postController.deleteComment(cid)
+    const response = await postController.deleteComment(cid,req.body)
     res.send(response)
   } catch (err: any) {
     console.log('in catch')

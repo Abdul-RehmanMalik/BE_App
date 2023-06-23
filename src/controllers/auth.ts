@@ -13,6 +13,7 @@ import {
   Request,
   Body,
   Query,
+  Put,
 } from 'tsoa'
 import { generateAccessTokenken } from '../util/generateAccessToken'
 import { generateRefreshToken } from '../util/generateRefreshtoken'
@@ -299,7 +300,7 @@ export class AuthController {
     await user.save()
     return 'Successfully Changed Password'
   }
-  @Post('/updatepassword')
+  @Put('/updatepassword')
   public async updatePassword(
     @Body() body: { newPassword: string; id: string }
   ): Promise<string> {
@@ -311,7 +312,6 @@ export class AuthController {
         message: 'User not found.',
       }
     }
-    await user.save()
     // Hash the password
     const hashedPassword = await PasswordUtils.hashPassword(newPassword)
     user.password = hashedPassword
