@@ -38,6 +38,8 @@ interface UserDocument extends UserPayload, Document {
   }
   isActivated: boolean
   profilePicture: string
+  isAdmin: boolean
+  isSuspended: boolean
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -75,6 +77,14 @@ const userSchema = new Schema<UserDocument>({
   },
   isActivated: {
     type: Boolean,
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false,
+  },
+  isSuspended: {
+    type: Boolean,
+    default: false,
   },
 })
 
